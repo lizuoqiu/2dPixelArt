@@ -48,14 +48,14 @@ export function ImageEditor({
   updateLayer
 }) {
   const onHandleChange = async e => {
-    handleChange(e); // Handle the change event (first part)
-    e.target.value = null; // Optionally reset the input value
     const file = e.target.files[0]; // Get the file from the event
     if (!file) return; // Exit if no file is selected
     const formData = new FormData();
     formData.append("file", file); // Prepare the file for uploading
+    console.log(e.target.value);
+    console.error("upload");
     try {
-      const response = await fetch("http://localhost:3000/upload", {
+      const response = await fetch("http://127.0.0.1:5000/upload", {
         method: "POST",
         body: formData
       }); // Upload the file
@@ -67,6 +67,7 @@ export function ImageEditor({
     } catch (error) {
       console.error("Error:", error);
     }
+    handleChange(e); // Handle the change event (first part)
   };
   const openAttachment = id => {
     document.getElementById(id).click();
@@ -152,7 +153,9 @@ export function ImageEditor({
                     {/* <DropdownItem header>Header</DropdownItem> */}
                     <DropdownItem
                       onClick={() => {
+                        console.log("fuck");
                         openAttachment("upload-rgb-image");
+                        console.log(selectionImageUrl);
                       }}
                     >
                       <label htmlFor="upload-rgb-image">Open RGB Image</label>
@@ -329,30 +332,30 @@ const mapDispatchToProps = {
   clear: imageActions.clear,
   reset: imageActions.reset
 };
-// const onHandleChange = async e => {
-//   const file = e.target.files[0]; // Get the selected file
-//   if (!file) {
-//     return;
-//   }
+const submitting = async e => {
+  const file = e.target.files[0]; // Get the selected file
+  if (!file) {
+    return;
+  }
 
-//   const formData = new FormData();
-//   formData.append("file", file); // Match the name ('file') with your Python backend's expectation
+  const formData = new FormData();
+  formData.append("file", file); // Match the name ('file') with your Python backend's expectation
 
-//   try {
-//     const response = await fetch("http://localhost:3000/upload", {
-//       method: "POST",
-//       body: formData
-//     });
+  try {
+    const response = await fetch("http://localhost:3000/upload", {
+      method: "POST",
+      body: formData
+    });
 
-//     if (response.ok) {
-//       //console.log("Upload·successful");
-//       const data = await response.json();
-//       // Do something with the response data
-//     } else {
-//       console.error("Upload·failed");
-//     }
-//   } catch (error) {
-//     console.error("Error:", error);
-//   }
-// };
+    if (response.ok) {
+      //console.log("Upload·successful");
+      const data = await response.json();
+      // Do something with the response data
+    } else {
+      console.error("Upload·failed");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
 export default connect(mapStateToProps, mapDispatchToProps)(ImageEditor);
