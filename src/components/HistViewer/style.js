@@ -1,11 +1,11 @@
 import styled from "styled-components";
 
 const HistViewerStyle = styled.div`
-  height: 100%;
-  width: 100%;
-  overflow-y: auto;
+  height: 0%;
+  width: 0%;
+  overflow-y: hiddwn;
   overflow-x: hidden;
-  padding: 5%;
+  padding: 0%;
 `;
 
 export default HistViewerStyle;
