@@ -52,7 +52,8 @@ export function ImageEditor({
     if (!file) return; // Exit if no file is selected
     const formData = new FormData();
     formData.append("file", file); // Prepare the file for uploading
-    console.log(e.target.value);
+    // e.target.name = "depthImageUrl";
+    console.log(e.target.name);
     console.error("upload");
     try {
       const response = await fetch("http://127.0.0.1:5000/upload", {
@@ -61,6 +62,8 @@ export function ImageEditor({
       }); // Upload the file
       if (response.ok) {
         const data = await response.json(); // Process the response
+        console.error(data["image"]);
+        // selectionImageUrl= data["image"];
       } else {
         console.error("Upload failed");
       }
@@ -134,7 +137,7 @@ export function ImageEditor({
           id="upload-selection-image"
           type="file"
           name="selectionImageUrl"
-          onChange={onHandleChange}
+          onChange={onHandleChange}s
           accept="image/png"
         />
         <input id="upload-mask-image" type="file" name="maskImageUrl" onChange={onHandleChange} accept="image/png" />
@@ -153,7 +156,6 @@ export function ImageEditor({
                     {/* <DropdownItem header>Header</DropdownItem> */}
                     <DropdownItem
                       onClick={() => {
-                        console.log("fuck");
                         openAttachment("upload-rgb-image");
                         console.log(selectionImageUrl);
                       }}
