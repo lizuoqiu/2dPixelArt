@@ -45,6 +45,7 @@ export function ImageEditor({
   reset,
   initImage,
   handleChange,
+  initDepth,
   updateLayer
 }) {
   const onHandleChange = async e => {
@@ -62,7 +63,16 @@ export function ImageEditor({
       }); // Upload the file
       if (response.ok) {
         const data = await response.json(); // Process the response
-        console.error(data["image"]);
+        console.error(data["normal_map"]);
+        const base64String = data["normal_map"]; // replace with your actual base64 string key
+        const img = new Image();
+        img.onload = () => {
+          // Once the image is loaded, dispatch an action with the image
+          // Adjust this to fit how your reducer expects to receive the image
+          initDepth(img);
+        };
+        img.src = `data:image/jpeg;base64,${base64String}`;
+        // initDepth(base64String);
         // selectionImageUrl= data["image"];
       } else {
         console.error("Upload failed");
@@ -137,7 +147,7 @@ export function ImageEditor({
           id="upload-selection-image"
           type="file"
           name="selectionImageUrl"
-          onChange={onHandleChange}s
+          onChange={onHandleChange}
           accept="image/png"
         />
         <input id="upload-mask-image" type="file" name="maskImageUrl" onChange={onHandleChange} accept="image/png" />
@@ -324,6 +334,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  initDepth: imageActions.initDepth,
   handleChange: imageActions.handleChange,
   initImage: imageActions.initImage,
   updateLayer: imageActions.updateLayer,
