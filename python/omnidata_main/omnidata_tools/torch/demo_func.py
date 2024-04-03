@@ -43,6 +43,15 @@ map_location = (lambda storage, loc: storage.cuda()) if torch.cuda.is_available(
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def get_normal_map(task, img):
+    raw_input = img
+    x, y = img.size
+    size = max(x, y)
+    fill_color = raw_input.getpixel((0, 0)) # set fill color to be the same as input's top left pixel
+    img = Image.new('RGBA', (size, size), fill_color)
+    img.paste(raw_input, (int((size - x) / 2), int((size - y) / 2)))
+    raw_input.show()
+    img.show()
+
     # get target task and model
     if task == 'normal':
         image_size = 384
