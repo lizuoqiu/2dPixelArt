@@ -45,28 +45,42 @@ export function ImageEditor({
   reset,
   initImage,
   handleChange,
+  initDepth,
   updateLayer
 }) {
   const onHandleChange = async e => {
-    handleChange(e); // Handle the change event (first part)
-    e.target.value = null; // Optionally reset the input value
     const file = e.target.files[0]; // Get the file from the event
     if (!file) return; // Exit if no file is selected
     const formData = new FormData();
     formData.append("file", file); // Prepare the file for uploading
+    // e.target.name = "depthImageUrl";
+    console.log(e.target.name);
+    console.error("upload");
     try {
-      const response = await fetch("http://localhost:3000/upload", {
+      const response = await fetch("http://127.0.0.1:5000/upload", {
         method: "POST",
         body: formData
       }); // Upload the file
       if (response.ok) {
         const data = await response.json(); // Process the response
+        console.error(data["normal_map"]);
+        const base64String = data["normal_map"]; // replace with your actual base64 string key
+        const img = new Image();
+        img.onload = () => {
+          // Once the image is loaded, dispatch an action with the image
+          // Adjust this to fit how your reducer expects to receive the image
+          initDepth(img);
+        };
+        img.src = `data:image/jpeg;base64,${base64String}`;
+        // initDepth(base64String);
+        // selectionImageUrl= data["image"];
       } else {
         console.error("Upload failed");
       }
     } catch (error) {
       console.error("Error:", error);
     }
+    handleChange(e); // Handle the change event (first part)
   };
   const openAttachment = id => {
     document.getElementById(id).click();
@@ -153,6 +167,7 @@ export function ImageEditor({
                     <DropdownItem
                       onClick={() => {
                         openAttachment("upload-rgb-image");
+                        console.log(selectionImageUrl);
                       }}
                     >
                       <label htmlFor="upload-rgb-image">Open RGB Image</label>
@@ -319,6 +334,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  initDepth: imageActions.initDepth,
   handleChange: imageActions.handleChange,
   initImage: imageActions.initImage,
   updateLayer: imageActions.updateLayer,
@@ -329,30 +345,30 @@ const mapDispatchToProps = {
   clear: imageActions.clear,
   reset: imageActions.reset
 };
-// const onHandleChange = async e => {
-//   const file = e.target.files[0]; // Get the selected file
-//   if (!file) {
-//     return;
-//   }
+const submitting = async e => {
+  const file = e.target.files[0]; // Get the selected file
+  if (!file) {
+    return;
+  }
 
-//   const formData = new FormData();
-//   formData.append("file", file); // Match the name ('file') with your Python backend's expectation
+  const formData = new FormData();
+  formData.append("file", file); // Match the name ('file') with your Python backend's expectation
 
-//   try {
-//     const response = await fetch("http://localhost:3000/upload", {
-//       method: "POST",
-//       body: formData
-//     });
+  try {
+    const response = await fetch("http://localhost:3000/upload", {
+      method: "POST",
+      body: formData
+    });
 
-//     if (response.ok) {
-//       //console.log("Upload·successful");
-//       const data = await response.json();
-//       // Do something with the response data
-//     } else {
-//       console.error("Upload·failed");
-//     }
-//   } catch (error) {
-//     console.error("Error:", error);
-//   }
-// };
+    if (response.ok) {
+      //console.log("Upload·successful");
+      const data = await response.json();
+      // Do something with the response data
+    } else {
+      console.error("Upload·failed");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
 export default connect(mapStateToProps, mapDispatchToProps)(ImageEditor);
