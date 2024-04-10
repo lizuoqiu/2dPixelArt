@@ -5,7 +5,7 @@ import RangeSlider from "./rangeslider";
 import HistViewerStyle from "./style";
 import { getImageData } from "utils/drawHistogram";
 
-class HistViewer extends Component {
+class DirectionSelector extends Component {
   constructor() {
     super();
   }
@@ -34,11 +34,21 @@ class HistViewer extends Component {
     }
   }
   render() {
-    const { data } = this.state;
+    const handleDirectionClick = direction => {
+      console.log("Selected Direction:", direction);
+      // 这里可以根据所选方向执行更多动作
+    };
     return (
-      <HistViewerStyle>
-        <RangeSlider data={data} />
-      </HistViewerStyle>
+      <div className="direction-selector">
+        <button onClick={() => handleDirectionClick("Up")}>Up</button>
+        <button onClick={() => handleDirectionClick("Down")}>Down</button>
+        <button onClick={() => handleDirectionClick("Left")}>Left</button>
+        <button onClick={() => handleDirectionClick("Right")}>Right</button>
+        <button onClick={() => handleDirectionClick("Upper Left")}>Upper Left</button>
+        <button onClick={() => handleDirectionClick("Upper Right")}>Upper Right</button>
+        <button onClick={() => handleDirectionClick("Lower Left")}>Lower Left</button>
+        <button onClick={() => handleDirectionClick("Lower Right")}>Lower Right</button>
+      </div>
     );
   }
 }
@@ -50,4 +60,4 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {};
 
-export default connect(mapStateToProps, mapDispatchToProps)(HistViewer);
+export default DirectionSelector;
