@@ -30,11 +30,22 @@ class RgbViewer extends Component {
   }
   state = {
     windowWidth: window.innerWidth,
-    windowHeight: window.innerHeight
+    windowHeight: window.innerHeight,
+    polygonPoints: [] // 用于存储多边形的顶点
   };
   componentDidMount() {
     this.handleResize();
     window.addEventListener("resize", this.handleResize);
+    // 添加绘图事件监听器
+    const canvas = this.rgbImageRef.current;
+    canvas.addEventListener("click", this.addPolygonPoint); // 处理点击事件以添加多边形的点
+    canvas.addEventListener("dblclick", this.closePolygon); // 双击来闭合多边形
+  }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+    const canvas = this.rgbImageRef.current;
+    canvas.removeEventListener("click", this.addPolygonPoint);
+    canvas.removeEventListener("dblclick", this.closePolygon);
   }
   componentDidUpdate(prevProps) {
     let { rgbImageRef } = this;
@@ -313,6 +324,48 @@ class RgbViewer extends Component {
       start: null,
       end: null
     });
+  };
+  addPolygonPoint = e => {
+    const { offsetX, offsetY } = e;
+    const newPoint = { x: offsetX, y: offsetY };
+    const { polygonPoints } = this.state;
+    // 添加新点到状态中
+    this.setState(
+      {
+        polygonPoints: [...polygonPoints, newPoint]
+      },
+      () => {
+        // 每次添加点后重绘
+        this.drawPolygon();
+      }
+    );
+  };
+  drawPolygon = () => {
+    const { polygonPoints } = this.state;
+    const ctx = this.rgbImageRef.current.getContext("2d");
+    ctx.clearRect(0, 0, this.rgbImageRef.current.width, this.rgbImageRef.current.height); // 清除之前的绘制
+    ctx.beginPath();
+    polygonPoints.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y); // 移动到第一个点
+      } else {
+        ctx.lineTo(point.x, point.y); // 绘制到下一个点
+      }
+    });
+    ctx.stroke();
+  };
+  closePolygon = () => {
+    const { polygonPoints } = this.state;
+    if (polygonPoints.length > 2) {
+      this.setState(
+        {
+          polygonPoints: [...polygonPoints, polygonPoints[0]] // 将第一个点添加到最后来闭合多边形
+        },
+        () => {
+          this.drawPolygon(); // 重新绘制多边形
+        }
+      );
+    }
   };
   render() {
     const { rgbImageRef } = this;
