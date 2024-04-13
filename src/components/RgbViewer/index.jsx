@@ -211,6 +211,24 @@ class RgbViewer extends Component {
         });
       }
     }
+    if (prevProps.rgbImageUrl !== rgbImageUrl) {
+      rgbContext.clearRect(0, 0, rgbCanvas.width, rgbCanvas.height);
+      let rgbImage = new Image();
+      if (typeof rgbImageUrl === "object") {
+        objectUrl = getImageUrl(rgbImageUrl);
+        rgbImage.src = objectUrl;
+      } else {
+        rgbImage.src = rgbImageUrl;
+      }
+      rgbImage.onload = () => {
+        if (Math.max(rgbImage.height, rgbImage.width) > 1000) {
+          rgbImage = canvasResize(rgbImage);
+        }
+        rgbCanvas.getContext("2d").drawImage(rgbImage, 0, 0, rgbCanvas.width, rgbCanvas.height); // Ensure image covers the whole canvas
+        initRgb(cloneCanvas(rgbImage));
+        this.drawPolygon(); // Redraw the polygon on top of the loaded image
+      };
+    }
   }
   componentWillUnmount() {
     let rgbCanvas = this.rgbImageRef.current;
@@ -343,16 +361,15 @@ class RgbViewer extends Component {
   drawPolygon = () => {
     const { polygonPoints } = this.state;
     const ctx = this.rgbImageRef.current.getContext("2d");
-    ctx.clearRect(0, 0, this.rgbImageRef.current.width, this.rgbImageRef.current.height); // 清除之前的绘制
     ctx.beginPath();
     polygonPoints.forEach((point, index) => {
       if (index === 0) {
-        ctx.moveTo(point.x, point.y); // 移动到第一个点
+        ctx.moveTo(point.x, point.y);
       } else {
-        ctx.lineTo(point.x, point.y); // 绘制到下一个点
+        ctx.lineTo(point.x, point.y);
       }
     });
-    ctx.stroke();
+    ctx.stroke(); // 绘制当前的多边形
   };
   closePolygon = () => {
     const { polygonPoints } = this.state;
@@ -454,9 +471,52 @@ class RgbViewer extends Component {
             }
           }}
         ></canvas>
+        <button onClick={this.undoLastPoint}>Undo</button>
+        <button onClick={this.clearPoints}>Clear</button>
+        <button onClick={this.sendDataToBackend}>Send Data to Backend</button>
       </RgbViewerStyle>
     );
   }
+  undoLastPoint = () => {
+    const { polygonPoints } = this.state;
+    if (polygonPoints.length > 0) {
+      this.setState({ polygonPoints: polygonPoints.slice(0, -1) }, this.redrawCanvas);
+    }
+  };
+
+  clearPoints = () => {
+    this.setState({ polygonPoints: [] }, this.redrawCanvas);
+  };
+  redrawCanvas = () => {
+    const { rgbImageRef } = this;
+    const ctx = rgbImageRef.current.getContext("2d");
+    const { rgbImageUrl } = this.props;
+    // 首先清空画布
+    ctx.clearRect(0, 0, rgbImageRef.current.width, rgbImageRef.current.height);
+    // 重绘图像
+    let rgbImage = new Image();
+    rgbImage.src = rgbImageUrl;
+    rgbImage.onload = () => {
+      ctx.drawImage(rgbImage, 0, 0, rgbImageRef.current.width, rgbImageRef.current.height);
+      this.drawPolygon(); // 重新绘制多边形
+    };
+  };
+  sendDataToBackend = async () => {
+    const { polygonPoints } = this.state;
+    try {
+      const response = await fetch("your-backend-url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ points: polygonPoints })
+      });
+      const data = await response.json();
+      console.log("Data received from backend", data);
+    } catch (error) {
+      console.error("Error sending data to backend", error);
+    }
+  };
 }
 
 const mapStateToProps = state => ({
