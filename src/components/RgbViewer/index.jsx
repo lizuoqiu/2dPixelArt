@@ -473,7 +473,7 @@ class RgbViewer extends Component {
         ></canvas>
         <button onClick={this.undoLastPoint}>Undo</button>
         <button onClick={this.clearPoints}>Clear</button>
-        <button onClick={this.sendDataToBackend}>Send Data to Backend</button>
+        <button onClick={this.sendDataToBackend}>Update Normal map</button>
       </RgbViewerStyle>
     );
   }
@@ -501,6 +501,7 @@ class RgbViewer extends Component {
       this.drawPolygon(); // 重新绘制多边形
     };
   };
+  //backend URL selection
   sendDataToBackend = async () => {
     const { polygonPoints } = this.state;
     try {

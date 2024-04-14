@@ -25,3 +25,9 @@ function ThreeDViewer({ imageData }) {
 }
 
 export default ThreeDViewer;
+//1. 8 directions
+//2. points movement
+//3. zoom in and out
+//4. light point(3d viewer)
+//5. color picker
+//6. dynemic lines.
