@@ -53,7 +53,6 @@ def get_normal_map(task, img):
     # get target task and model
     if task == 'normal':
         image_size = 384
-        # image_size = img.size
         
         ## Version 1 model
         # pretrained_weights_path = root_dir + 'omnidata_unet_normal_v1.pth'
@@ -81,8 +80,8 @@ def get_normal_map(task, img):
         model.load_state_dict(state_dict)
         model.to(device)
         trans_totensor = transforms.Compose([transforms.Resize(image_size, interpolation=PIL.Image.BILINEAR),
-                                            transforms.CenterCrop(image_size),
-                                            get_transform('rgb', image_size=None)])
+                                             # transforms.CenterCrop(image_size),
+                                             get_transform('rgb', image_size=None)])
 
     elif args.task == 'depth':
         # image_size = 384
