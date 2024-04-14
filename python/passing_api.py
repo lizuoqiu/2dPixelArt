@@ -35,7 +35,7 @@ def upload_file():
         # img.save(img_io, format="PNG")
         # img_data = base64.b64encode(img_io.getvalue()).decode('utf-8')
         # return jsonify({'normal_map': f'{img_data}'}), 200
-        norm_map = get_normal_map('normal', img)
+        raw_norm_map = get_normal_map('normal', img) # unprocessed square shape normal
         # norm_map
         img_io = BytesIO()
         light_sources = [
@@ -52,11 +52,12 @@ def upload_file():
         
         ambient_light = np.array([0.5, 0.5, 0.5])
         shaded_image_io = BytesIO()
-        shaded_image = apply_shading(img, norm_map, light_sources, ambient_light)
+        norm_map, shaded_image = apply_shading(img, raw_norm_map, light_sources, ambient_light)
         shaded_pil = Image.fromarray(shaded_image)
         shaded_pil.show()
         # shaded_image.save(shaded_image_io, format="PNG")
-        to_pil(norm_map[0]).save(img_io, format="PNG")
+        norm_pil = Image.fromarray(np.uint8(norm_map))
+        norm_pil.save(img_io, format="PNG")
         # image_data.save(img_io, format="PNG")
         img_io.seek(0)
         # shaded_image.seek(0)

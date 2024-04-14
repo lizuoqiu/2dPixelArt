@@ -47,9 +47,6 @@ def apply_shading(base_image, normal_map, light_sources, ambient_light):
     y, x, _ = normal_map.shape
     startx = x//2-(base_x//2)
     starty = y//2-(base_y//2)
-    print("x, y:", x, y)
-    print("base_x, base_y:", base_x, base_y)
-    print("startx, starty:", startx, starty)
     normal_map = normal_map[starty:starty+base_y, startx:startx+base_x, :]
     norm_pil = Image.fromarray(np.uint8(normal_map * 255))
     norm_pil.show()
@@ -62,15 +59,13 @@ def apply_shading(base_image, normal_map, light_sources, ambient_light):
         light_vector, light_color = light['position'], light['color']
         light_vector /= np.linalg.norm(light_vector)
         intensity = np.dot(normals, light_vector).clip(0, 1)
-        print("Copied Normal:")
-        print(normals)
         base_image_array = np.array(base_image)[:, :, :3] # make sure base_image_array does not include alpha channel
         shading = base_image_array * intensity[:, :, np.newaxis] * light_color
         final_shading += shading
 
     final_shading += ambient_light * base_image_array
 
-    return np.clip(final_shading, 0, 255).astype(np.uint8)
+    return np.clip(normal_map * 255, 0, 255).astype(np.uint8), np.clip(final_shading, 0, 255).astype(np.uint8)
 
 
 if __name__ == '__main__':
