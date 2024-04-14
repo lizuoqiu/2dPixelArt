@@ -80,6 +80,11 @@ const initialState = {
 
 export const imageReducer = (state = initialState, { type, payload }) => {
   switch (type) {
+    case types.NORMAL_MAP_CHANGE:
+      return {
+        ...state,
+        mainDepthCanvas: payload
+      };
     case types.HANDLE_CHANGE:
       return {
         ...state,

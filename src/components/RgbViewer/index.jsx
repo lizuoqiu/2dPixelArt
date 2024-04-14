@@ -536,6 +536,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  normal_map_change: imageActions.normal_map_change,
   initImage: imageActions.initImage,
   initRgb: imageActions.initRgb,
   storeBoxParams: imageActions.storeBoxParams,

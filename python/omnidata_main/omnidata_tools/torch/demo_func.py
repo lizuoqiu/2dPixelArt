@@ -78,7 +78,7 @@ def get_normal_map(task, img):
         #     state_dict = checkpoint
         # subprocess.call(["ls", "-l"])
         # pretrained_weights_path = root_dir + 'omnidata_dpt_normal_v2.ckpt'
-        pretrained_weights_path = "C:\\Users\\ukzha\\Documents\\Course_Material\\CMPT461\\Project\\front_end\\2dPixelArt\\python\\omnidata_main\\omnidata_tools\\torch\\pretrained_models\\omnidata_dpt_normal_v2.ckpt"
+        pretrained_weights_path = "../python/omnidata_main/omnidata_tools/torch/pretrained_models/omnidata_dpt_normal_v2.ckpt"
         model = DPTDepthModel(backbone='vitb_rn50_384', num_channels=3) # DPT Hybrid
         checkpoint = torch.load(pretrained_weights_path, map_location=map_location)
         if 'state_dict' in checkpoint:
