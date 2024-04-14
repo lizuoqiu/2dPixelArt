@@ -66,6 +66,14 @@ def upload_file():
         return jsonify({'normal_map': f'{img_data}'}), 200
         #
         # return jsonify({'message': 'File successfully uploaded', 'filename': filename}), 200
-    
+
+@app.route('/update_normal_map', methods=['POST'])
+def update_normal_map():
+    data = request.get_json()
+    # Now you can access your points array from the data
+    points = data.get('points') if data else None
+    print(points)
+    return jsonify({'normal_map': f'okay'}), 200
+
 if __name__ == '__main__':
     app.run(debug=True)
