@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from PIL import Image
 
 
 def load_image(path):
@@ -38,17 +39,32 @@ def normalize_normal_map(normal_map):
 
 
 def apply_shading(base_image, normal_map, light_sources, ambient_light):
-    normals = normalize_normal_map(normal_map)
-    final_shading = np.zeros_like(base_image, dtype='float64')
+    normal_map = normal_map.numpy().transpose(1, 2, 0)
+    # process the normal to be the same size as input (resize to max dimension size then center crop)
+    base_x, base_y = base_image.size
+    y, x, _ = normal_map.shape
+    if (max(base_y, base_x) > min(y, x)):
+        normal_map = cv2.resize(normal_map, dsize=(max(base_y, base_x), max(base_y, base_x)), interpolation=cv2.INTER_CUBIC)
+    startx = x//2-(base_x//2)
+    starty = y//2-(base_y//2)    
+    normal_map = normal_map[starty:starty+base_y, startx:startx+base_x, :]
+    print(normal_map)
+    norm_pil = Image.fromarray(np.uint8(normal_map * 255))
+    norm_pil.show()
+
+    # normals = normalize_normal_map(normal_map)
+    normals = normal_map.copy()
+    final_shading = np.zeros_like(base_image, dtype='float64')[:, :, :3] # make sure final_shading does not include alpha channel
 
     for light in light_sources:
         light_vector, light_color = light['position'], light['color']
         light_vector /= np.linalg.norm(light_vector)
         intensity = np.dot(normals, light_vector).clip(0, 1)
-        shading = base_image * intensity[:, :, np.newaxis] * light_color
+        base_image_array = np.array(base_image)[:, :, :3] # make sure base_image_array does not include alpha channel
+        shading = base_image_array * intensity[:, :, np.newaxis] * light_color
         final_shading += shading
 
-    final_shading += ambient_light * base_image
+    final_shading += ambient_light * base_image_array
 
     return np.clip(final_shading, 0, 255).astype(np.uint8)
 
