@@ -29,6 +29,7 @@ import SampleDepth from "assets/images/depth/depth.png";
 let objectUrl = null;
 
 export function ImageEditor({
+  normal_map_change,
   selectionImageUrl,
   maskImageUrl,
   depthImageSize,
@@ -69,7 +70,8 @@ export function ImageEditor({
         img.onload = () => {
           // Once the image is loaded, dispatch an action with the image
           // Adjust this to fit how your reducer expects to receive the image
-          initDepth(img);
+          normal_map_change(img);
+          // initDepth(img);
         };
         img.src = `data:image/jpeg;base64,${base64String}`;
         // initDepth(base64String);
@@ -334,6 +336,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  normal_map_change: imageActions.normal_map_change,
   initDepth: imageActions.initDepth,
   handleChange: imageActions.handleChange,
   initImage: imageActions.initImage,

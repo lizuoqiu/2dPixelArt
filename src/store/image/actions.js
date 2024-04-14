@@ -1,6 +1,7 @@
 import { types } from "./constants";
 
 export const imageActions = {
+  normal_map_change: payload => ({ type: types.NORMAL_MAP_CHANGE, payload: payload }),
   handleChange: e => ({ type: types.HANDLE_CHANGE, payload: e.target }),
   initImage: payload => ({ type: types.INIT_IMAGE, payload: payload }),
   initRgb: payload => ({ type: types.INIT_RGB, payload: payload }),

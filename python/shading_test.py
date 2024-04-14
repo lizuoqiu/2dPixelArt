@@ -69,9 +69,10 @@ def apply_shading(base_image, normal_map, light_sources, ambient_light):
 
 
 if __name__ == '__main__':
-    base_image = load_image("test_1.png")
-    normal_map = load_image("test_1_normal_map.png")
-
+    base_image = load_image("01_minimum_rgb.png")
+    normal_map = load_image("02_basicLines_normal.png")
+    print(base_image.shape)
+    print(normal_map.shape)
     light_sources = [
         # {'position': np.array([0, 30, 5], dtype='float64'), 'color': np.array([1, 0, 0])},  # r
         # {'position': np.array([-30, -30, 5], dtype='float64'), 'color': np.array([0, 1, 0])},  # g
