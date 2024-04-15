@@ -70,8 +70,8 @@ export function ImageEditor({
         img.onload = () => {
           // Once the image is loaded, dispatch an action with the image
           // Adjust this to fit how your reducer expects to receive the image
-          normal_map_change(img);
-          // initDepth(img);
+          // normal_map_change(img);
+          initDepth(img);
         };
         img.src = `data:image/jpeg;base64,${base64String}`;
         // initDepth(base64String);
