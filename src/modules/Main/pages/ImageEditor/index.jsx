@@ -65,17 +65,19 @@ export function ImageEditor({
       if (response.ok) {
         const data = await response.json(); // Process the response
         console.error(data["normal_map"]);
-        const base64String = data["normal_map"]; // replace with your actual base64 string key
+        const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
         const img = new Image();
         img.onload = () => {
-          // Once the image is loaded, dispatch an action with the image
-          // Adjust this to fit how your reducer expects to receive the image
-          // normal_map_change(img);
           initDepth(img);
         };
-        img.src = `data:image/jpeg;base64,${base64String}`;
-        // initDepth(base64String);
-        // selectionImageUrl= data["image"];
+        img.src = `data:image/jpeg;base64,${normal_map_base64String}`;
+        const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
+        const shading_image = new Image();
+        shading_image.onload = () => {
+          // TODO: Replace by the image update function from 3d viewer
+          // initDepth(shading_base64String);
+        };
+        shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
       } else {
         console.error("Upload failed");
       }
