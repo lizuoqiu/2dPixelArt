@@ -214,6 +214,7 @@ class RgbViewer extends Component {
     if (prevProps.rgbImageUrl !== rgbImageUrl) {
       rgbContext.clearRect(0, 0, rgbCanvas.width, rgbCanvas.height);
       let rgbImage = new Image();
+      console.log('Received image dimensions:', rgbImage.width, rgbImage.height);
       if (typeof rgbImageUrl === "object") {
         objectUrl = getImageUrl(rgbImageUrl);
         rgbImage.src = objectUrl;
