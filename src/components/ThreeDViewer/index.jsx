@@ -8,15 +8,26 @@ function ImageViewer() {
 
   useEffect(() => {
     const handleUpdateImage = event => {
-      const img = new Image();
-      img.onload = () => {
-        // Determine the initial scale to ensure the longest side is no more than 1000 pixels
-        let maxDimension = Math.max(img.width, img.height);
-        let initialScale = maxDimension > 1000 ? 1000 / maxDimension : 1;
-        setImage(img);
-        setScale(initialScale);
-      };
-      img.src = null; // Set the source to your image URL
+      console.log("Event received:", event); // Debug: Check if events are received
+      const image = event.detail.image;
+      if (canvasRef.current && image) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        canvas.width = image.width;
+        canvas.height = image.height;
+        ctx.drawImage(image, 0, 0);
+      } else {
+        console.error("Canvas not available or image not loaded");
+      }
+      // const img = new Image();
+      // img.onload = () => {
+      //   // Determine the initial scale to ensure the longest side is no more than 1000 pixels
+      //   let maxDimension = Math.max(img.width, img.height);
+      //   let initialScale = maxDimension > 1000 ? 1000 / maxDimension : 1;
+      //   setImage(img);
+      //   setScale(initialScale);
+      // };
+      // img.src = null; // Set the source to your image URL
     };
 
     window.addEventListener("update-image", handleUpdateImage);

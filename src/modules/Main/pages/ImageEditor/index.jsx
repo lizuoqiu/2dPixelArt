@@ -64,18 +64,22 @@ export function ImageEditor({
       }); // Upload the file
       if (response.ok) {
         const data = await response.json(); // Process the response
-        console.error(data["normal_map"]);
+        // console.error(data["normal_map"]);
+        // console.log(data);
         const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
+        // console.log(normal_map_base64String);
         const img = new Image();
         img.onload = () => {
           initDepth(img);
         };
         img.src = `data:image/jpeg;base64,${normal_map_base64String}`;
         const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
+        console.log(shading_base64String);
         const shading_image = new Image();
         shading_image.onload = () => {
           // TODO: Replace by the image update function from 3d viewer
           window.updateImageViewer(shading_image);
+          console.log("Image loaded, updating viewer..."); // Debug: Ensure this log appears
           // initDepth(shading_base64String);
         };
         shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
