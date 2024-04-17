@@ -6,7 +6,7 @@ function ImageViewer() {
   useEffect(() => {
     const handleUpdateImage = event => {
       const image = event.detail.image;
-      console.log('Received image dimensions:', image.width, image.height);
+      console.log("Received image dimensions:", image.width, image.height);
       if (canvasRef.current && image) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
@@ -17,7 +17,7 @@ function ImageViewer() {
         // Apply the scale to canvas dimensions
         canvas.width = image.width * scale;
         canvas.height = image.height * scale;
-        console.log('Scaled canvas dimensions:', canvas.width, canvas.height);
+        console.log("Scaled canvas dimensions:", canvas.width, canvas.height);
 
         // Clear the canvas and draw the new image
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -26,28 +26,33 @@ function ImageViewer() {
         console.error("Canvas not available or image not loaded");
       }
     };
+    const handleResize = event => {};
 
     window.addEventListener("update-image", handleUpdateImage);
+    window.addEventListener("resize", handleResize);
+
     return () => {
       window.removeEventListener("update-image", handleUpdateImage);
     };
   }, []);
 
-   return (
-    <div style={{
-      maxWidth: '1000px', // Limit the size of the canvas container
-      maxHeight: '100%',
-      margin: 'auto', // Center the canvas container
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      border: '1px solid red' // Temporary border to visualize the container
-    }}>
+  return (
+    <div
+      style={{
+        maxWidth: "1000px", // Limit the size of the canvas container
+        maxHeight: "100%",
+        margin: "auto", // Center the canvas container
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        border: "1px solid red" // Temporary border to visualize the container
+      }}
+    >
       <canvas
         ref={canvasRef}
         style={{
-          maxWidth: '100%',
-          maxHeight: '100%'
+          maxWidth: "100%",
+          maxHeight: "100%"
         }}
       />
     </div>
