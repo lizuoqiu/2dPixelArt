@@ -1,42 +1,87 @@
-import React, { useState, useEffect } from "react";
-import ThreeDViewerStyle from "./style";
+import React, { useState, useEffect, useRef } from "react";
 
-function ImageContainer() {
-  const [imageData, setImageData] = useState(null);
+function ImageViewer() {
+  const [image, setImage] = useState(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    const fetchImageData = async () => {
-      try {
-        const response = await fetch("https://your-backend-url/api/images");
-        const blob = await response.blob(); // 假设后端直接返回一个图片的Blob数据
-        setImageData(blob);
-      } catch (error) {
-        console.error("Failed to fetch image data:", error);
-      }
-    };
+    const img = new Image();
+    img.onload = () => {
+      // Determine the initial scale to ensure the longest side is no more than 1000 pixels
+      let maxDimension = Math.max(img.width, img.height);
+      let initialScale = maxDimension > 1000 ? 1000 / maxDimension : 1;
 
-    fetchImageData();
+      setImage(img);
+      setScale(initialScale);
+    };
+    img.src = null; // Set the source to your image URL
+    window.addEventListener("update-image", handleUpdateImage);
+    return () => {
+      window.removeEventListener("update-image", handleUpdateImage);
+    };
   }, []);
+
+  useEffect(() => {
+    if (image && canvasRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+
+      // Recalculate the scale for resizing
+      let maxDimension = Math.max(image.width, image.height);
+      let dynamicScale = maxDimension > 1000 ? 1000 / maxDimension : 1;
+      if (scale * maxDimension > 1000) dynamicScale = 1000 / maxDimension;
+
+      canvasRef.current.width = image.width * dynamicScale;
+      canvasRef.current.height = image.height * dynamicScale;
+
+      drawImage(ctx, image, offset.x, offset.y, dynamicScale);
+    }
+  }, [offset, scale, image]);
+
+  function drawImage(ctx, img, offsetX, offsetY, scale) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Clear the canvas
+    ctx.save(); // Save the current state
+    ctx.translate(offsetX, offsetY); // Move the context to pan
+    ctx.scale(scale, scale); // Apply the scale
+    ctx.drawImage(img, 0, 0, img.width, img.height); // Draw the image
+    ctx.restore(); // Restore the context to the original state
+  }
+
+  const handleWheel = e => {
+    e.preventDefault();
+    const scaleFactor = 1.1;
+    setScale(prevScale => prevScale * (e.deltaY < 0 ? scaleFactor : 1 / scaleFactor));
+  };
+
+  const handleMouseDown = e => {
+    const startX = e.clientX - offset.x;
+    const startY = e.clientY - offset.y;
+    const handleMouseMove = moveEvent => {
+      setOffset({
+        x: moveEvent.clientX - startX,
+        y: moveEvent.clientY - startY
+      });
+    };
+    const handleMouseUp = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
 
   return (
     <div>
-      <h1>View 3D Image</h1>
-      {imageData && (
-        <img
-          src={URL.createObjectURL(imageData)}
-          alt="3D Visualization"
-          style={{ maxWidth: "100%", maxHeight: "100%" }}
-        />
-      )}
+      {/*<h1>Image Viewer</h1>*/}
+      <canvas ref={canvasRef} onWheel={handleWheel} onMouseDown={handleMouseDown} style={{ cursor: "grab" }}></canvas>
     </div>
   );
 }
 
-export default ImageContainer;
+window.updateImageViewer = function (imageObject) {
+  const event = new CustomEvent("update-image", { detail: { image: imageObject } });
+  window.dispatchEvent(event);
+};
 
-//1. 8 directions
-//2. points movement
-//3. zoom in and out
-//4. light point(3d viewer)
-//5. color picker
-//6. dynemic lines.
+export default ImageViewer;

@@ -75,6 +75,7 @@ export function ImageEditor({
         const shading_image = new Image();
         shading_image.onload = () => {
           // TODO: Replace by the image update function from 3d viewer
+          window.updateImageViewer(shading_image);
           // initDepth(shading_base64String);
         };
         shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
