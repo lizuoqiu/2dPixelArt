@@ -1,7 +1,7 @@
 import numpy as np
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
-from PIL import Image
+from PIL import Image, ImageDraw
 from io import BytesIO
 import base64
 import os
@@ -16,8 +16,13 @@ app = Flask(__name__)
 CORS(app)# Ensure there's a folder for uploads
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+input = Image.new("RGB", (256, 256), (255, 255, 255))
+norm_map = []
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    global input, norm_map
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
 
@@ -30,12 +35,12 @@ def upload_file():
         # filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         # file.save(filepath)
         # Process the file as needed
-        img = Image.open(file)
+        input = Image.open(file)
         # img_io = BytesIO()
         # img.save(img_io, format="PNG")
         # img_data = base64.b64encode(img_io.getvalue()).decode('utf-8')
         # return jsonify({'normal_map': f'{img_data}'}), 200
-        raw_norm_map = get_normal_map('normal', img) # unprocessed square shape normal
+        raw_norm_map = get_normal_map('normal', input) # unprocessed square shape normal
         # norm_map
         img_io = BytesIO()
         light_sources = [
@@ -52,7 +57,7 @@ def upload_file():
         
         ambient_light = np.array([0.5, 0.5, 0.5])
         shaded_image_io = BytesIO()
-        norm_map, shaded_image = apply_shading(img, raw_norm_map, light_sources, ambient_light)
+        norm_map, shaded_image = apply_shading(input, raw_norm_map, light_sources, ambient_light)
         shaded_pil = Image.fromarray(np.uint8(shaded_image))
         shaded_pil.show()
         shaded_pil.save(shaded_image_io, format="PNG")
@@ -75,7 +80,16 @@ def update_normal_map():
     data = request.get_json()
     # Now you can access your points array from the data
     points = data.get('points') if data else None
-    print(points)
+    point_tuples = [(point['x'], point['y']) for point in points]
+    input_np = np.array(input)
+    print(point_tuples)
+    print(input_np.shape)
+    print(norm_map)
+    height, width, _ = input_np.shape
+    mask_img = Image.new('L', (width, height), 0)
+    ImageDraw.Draw(mask_img).polygon(point_tuples, outline=1, fill=1)
+    mask = np.array(mask_img)
+    print(mask)
     return jsonify({'normal_map': f'okay'}), 200
 
 if __name__ == '__main__':
