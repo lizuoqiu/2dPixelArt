@@ -7,16 +7,18 @@ function ImageViewer() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      // Determine the initial scale to ensure the longest side is no more than 1000 pixels
-      let maxDimension = Math.max(img.width, img.height);
-      let initialScale = maxDimension > 1000 ? 1000 / maxDimension : 1;
-
-      setImage(img);
-      setScale(initialScale);
+    const handleUpdateImage = event => {
+      const img = new Image();
+      img.onload = () => {
+        // Determine the initial scale to ensure the longest side is no more than 1000 pixels
+        let maxDimension = Math.max(img.width, img.height);
+        let initialScale = maxDimension > 1000 ? 1000 / maxDimension : 1;
+        setImage(img);
+        setScale(initialScale);
+      };
+      img.src = null; // Set the source to your image URL
     };
-    img.src = null; // Set the source to your image URL
+
     window.addEventListener("update-image", handleUpdateImage);
     return () => {
       window.removeEventListener("update-image", handleUpdateImage);
