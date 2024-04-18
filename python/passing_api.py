@@ -77,6 +77,7 @@ def upload_file():
 
 @app.route('/update_normal_map', methods=['POST'])
 def update_normal_map():
+    global norm_map
     data = request.get_json()
     # Now you can access your points array from the data
     if data:
@@ -84,6 +85,7 @@ def update_normal_map():
         canvasHeight = data.get('canvasHeight')
         points = data.get('points') if data else None
         point_tuples = [(point['x'], point['y']) for point in points]
+        norm_direction = [1, 1, 1] # TODO: grab input from the front end
         input_np = np.array(input)
         print(canvasWidth, canvasHeight)
         print(point_tuples)
@@ -99,8 +101,19 @@ def update_normal_map():
         mask_img = mask_img.resize((new_width, new_height))
         mask = np.array(mask_img)
         mask = mask[:, (new_width - width) // 2:(new_width + width) // 2]
+
+        # combine the new normal with the existing normal
+        new_normal = np.zeros_like(norm_map)
+        new_normal[:, :, 0] = norm_direction[0]
+        new_normal[:, :, 1] = norm_direction[1]
+        new_normal[:, :, 2] = norm_direction[2]
+        norm_map[mask == 1] = new_normal[mask == 1]
+
         mask_pil = Image.fromarray(np.uint8(mask * 255))
         mask_pil.show()
+
+        norm_map_pil = Image.fromarray(np.uint8(norm_map))
+        norm_map_pil.show()
 
         return jsonify({'normal_map': f'okay'}), 200
 
