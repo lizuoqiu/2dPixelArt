@@ -79,21 +79,30 @@ def upload_file():
 def update_normal_map():
     data = request.get_json()
     # Now you can access your points array from the data
-    canvasWidth = data.get('canvasWidth')
-    canvasHeight = data.get('canvasHeight')
-    print([canvasWidth, canvasHeight])
-    points = data.get('points') if data else None
-    point_tuples = [(point['x'], point['y']) for point in points]
-    input_np = np.array(input)
-    print(point_tuples)
-    print(input_np.shape)
-    print(norm_map)
-    height, width, _ = input_np.shape
-    mask_img = Image.new('L', (width, height), 0)
-    ImageDraw.Draw(mask_img).polygon(point_tuples, outline=1, fill=1)
-    mask = np.array(mask_img)
-    print(mask)
-    return jsonify({'normal_map': f'okay'}), 200
+    if data:
+        canvasWidth = data.get('canvasWidth')
+        canvasHeight = data.get('canvasHeight')
+        points = data.get('points') if data else None
+        point_tuples = [(point['x'], point['y']) for point in points]
+        input_np = np.array(input)
+        print(canvasWidth, canvasHeight)
+        print(point_tuples)
+        print(input_np.shape)
+        print(norm_map)
+        height, width, _ = input_np.shape
+        aspect_ratio = width / height
+        scaling_ratio = height / canvasHeight
+        mask_img = Image.new('L', (canvasWidth, canvasHeight), 0)
+        ImageDraw.Draw(mask_img).polygon(point_tuples, outline=1, fill=1)
+        new_height = int(canvasHeight * scaling_ratio)
+        new_width = int(canvasWidth * scaling_ratio)
+        mask_img = mask_img.resize((new_width, new_height))
+        mask = np.array(mask_img)
+        mask = mask[:, (new_width - width) // 2:(new_width + width) // 2]
+        mask_pil = Image.fromarray(np.uint8(mask * 255))
+        mask_pil.show()
+
+        return jsonify({'normal_map': f'okay'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
