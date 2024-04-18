@@ -1,10 +1,8 @@
 import numpy as np
 from flask import Flask, request, jsonify
-from werkzeug.utils import secure_filename
 from PIL import Image, ImageDraw
 from io import BytesIO
 import base64
-import os
 from flask_cors import CORS
 from omnidata_main.omnidata_tools.torch.demo_func import get_normal_map
 from shading_test import apply_shading
@@ -13,12 +11,13 @@ from torchvision import transforms
 to_pil = transforms.ToPILImage()
 
 app = Flask(__name__)
-CORS(app)# Ensure there's a folder for uploads
+CORS(app)  # Ensure there's a folder for uploads
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 input = Image.new("RGB", (256, 256), (255, 255, 255))
 norm_map = []
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -40,7 +39,7 @@ def upload_file():
         # img.save(img_io, format="PNG")
         # img_data = base64.b64encode(img_io.getvalue()).decode('utf-8')
         # return jsonify({'normal_map': f'{img_data}'}), 200
-        raw_norm_map = get_normal_map('normal', input) # unprocessed square shape normal
+        raw_norm_map = get_normal_map('normal', input)  # unprocessed square shape normal
         # norm_map
         img_io = BytesIO()
         light_sources = [
@@ -75,29 +74,40 @@ def upload_file():
         #
         # return jsonify({'message': 'File successfully uploaded', 'filename': filename}), 200
 
+
 @app.route('/update_normal_map', methods=['POST'])
 def update_normal_map():
     global norm_map
     data = request.get_json()
+    norm_dict = {
+        "UP": [217, 127, 217],
+        "DOWN": [37, 127, 217],
+        "LEFT": [127, 37, 217],
+        "RIGHT": [127, 217, 217],
+        "TOP-LEFT": [191, 63, 217],
+        "TOP-RIGHT": [191, 191, 217],
+        "BOTTOM-LEFT": [63, 63, 217],
+        "BOTTOM-RIGHT": [63, 191, 217]
+    }
     # Now you can access your points array from the data
     if data:
-        canvasWidth = data.get('canvasWidth')
-        canvasHeight = data.get('canvasHeight')
+        canvas_width = data.get('canvasWidth')
+        canvas_height = data.get('canvasHeight')
         points = data.get('points') if data else None
         point_tuples = [(point['x'], point['y']) for point in points]
-        norm_direction = [1, 1, 1] # TODO: grab input from the front end
+        norm_direction = [127, 217, 217]  # TODO: grab input from the front end
         input_np = np.array(input)
-        print(canvasWidth, canvasHeight)
+        print(canvas_width, canvas_height)
         print(point_tuples)
         print(input_np.shape)
         print(norm_map)
         height, width, _ = input_np.shape
         aspect_ratio = width / height
-        scaling_ratio = height / canvasHeight
-        mask_img = Image.new('L', (canvasWidth, canvasHeight), 0)
+        scaling_ratio = height / canvas_height
+        mask_img = Image.new('L', (canvas_width, canvas_height), 0)
         ImageDraw.Draw(mask_img).polygon(point_tuples, outline=1, fill=1)
-        new_height = int(canvasHeight * scaling_ratio)
-        new_width = int(canvasWidth * scaling_ratio)
+        new_height = int(canvas_height * scaling_ratio)
+        new_width = int(canvas_width * scaling_ratio)
         mask_img = mask_img.resize((new_width, new_height))
         mask = np.array(mask_img)
         mask = mask[:, (new_width - width) // 2:(new_width + width) // 2]
@@ -116,6 +126,7 @@ def update_normal_map():
         norm_map_pil.show()
 
         return jsonify({'normal_map': f'okay'}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
