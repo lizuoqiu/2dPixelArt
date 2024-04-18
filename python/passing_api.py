@@ -79,6 +79,9 @@ def upload_file():
 def update_normal_map():
     data = request.get_json()
     # Now you can access your points array from the data
+    canvasWidth = data.get('canvasWidth')
+    canvasHeight = data.get('canvasHeight')
+    print([canvasWidth, canvasHeight])
     points = data.get('points') if data else None
     point_tuples = [(point['x'], point['y']) for point in points]
     input_np = np.array(input)

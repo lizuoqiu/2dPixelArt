@@ -513,7 +513,7 @@ class RgbViewer extends Component {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ points: polygonPoints , canvasWidth: rgbCanvas.width, canvasHeight: rgbCanvas.height})
+        body: JSON.stringify({ points: polygonPoints, canvasWidth: rgbCanvas.width, canvasHeight: rgbCanvas.height })
       });
       const data = await response.json();
       console.log("Data received from backend", data);
