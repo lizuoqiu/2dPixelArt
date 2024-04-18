@@ -67,7 +67,7 @@ class DirectionSelector extends Component {
     const { selectedDirection, polygonPoints } = this.state;
     const canvas = this.directionRef.current; // 获取正确的canvas引用
     const { pointerList } = this.props; // Access pointerList from props
-    console.log(selectedDirection, pointerList);
+    console.log(selectedDirection, pointerList, canvasSize);
     if (!selectedDirection) {
       alert("choose a direction");
       return;
@@ -81,7 +81,8 @@ class DirectionSelector extends Component {
         direction: selectedDirection,
         canvasWidth: canvas.width, // 使用canvas.width
         canvasHeight: canvas.height, // 使用canvas.height
-        pointerList: pointerList
+        pointerList: pointerList,
+        canvasSize: canvasSize
       })
     })
       .then(response => response.json())
@@ -108,7 +109,8 @@ class DirectionSelector extends Component {
   }
 }
 const mapStateToProps = state => ({
-  pointerList: imageSelectors.pointerList(state) // Assuming the existence of this selector
+  pointerList: imageSelectors.pointerList(state), // Assuming the existence of this selector
+  canvasSize: imageSelectors.canvasSize(state)
 });
 
 export default connect(mapStateToProps)(DirectionSelector);

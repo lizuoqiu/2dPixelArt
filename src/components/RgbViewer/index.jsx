@@ -57,6 +57,7 @@ class RgbViewer extends Component {
   componentDidUpdate(prevProps, prevState) {
     let { rgbImageRef } = this;
     let {
+      canvasSize,
       pointerList,
       rgbImageUrl,
       mainRgbCanvas,
@@ -76,7 +77,15 @@ class RgbViewer extends Component {
       addEffect
     } = this.props;
     let rgbCanvas = rgbImageRef.current;
+    let width = rgbCanvas.width;
+    let height = rgbCanvas.height;
+    this.props.canvas_size_update({width, height});
     let rgbContext = rgbCanvas.getContext("2d");
+    if(prevState.rgbCanvas.width != this.state.rgbCanvas.width || prevState.rgbCanvas.height != this.state.rgbCanvas.height){
+      let width = rgbCanvas.width;
+      let height = rgbCanvas.height;
+      this.props.canvas_size_update({width, height});
+    }
     // Load image and initialize all canvas images
     if (prevState.polygonPoints !== this.state.polygonPoints) {
       // Dispatch the action with the new polygon points
@@ -478,7 +487,6 @@ class RgbViewer extends Component {
         ></canvas>
         <button onClick={this.undoLastPoint}>Undo</button>
         <button onClick={this.clearPoints}>Clear</button>
-        <button onClick={this.sendDataToBackend}>Update Normal map</button>
       </RgbViewerStyle>
     );
   }
@@ -532,6 +540,7 @@ class RgbViewer extends Component {
 }
 
 const mapStateToProps = state => ({
+  canvasSize: imageSelectors.canvasSize(state),
   pointerList: imageSelectors.pointerList(state),
   rgbImageUrl: imageSelectors.rgbImageUrl(state),
   mainRgbCanvas: imageSelectors.mainRgbCanvas(state),
@@ -548,6 +557,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  canvas_size_update: imageActions.canvas_size_update,
   point_list_update: imageActions.point_list_update,
   normal_map_change: imageActions.normal_map_change,
   initImage: imageActions.initImage,
