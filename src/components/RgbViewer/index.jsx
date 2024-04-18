@@ -507,12 +507,13 @@ class RgbViewer extends Component {
     const { polygonPoints } = this.state;
     try {
       console.log(polygonPoints);
+      const rgbCanvas = this.rgbImageRef.current;
       const response = await fetch("http://127.0.0.1:5000/update_normal_map", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ points: polygonPoints })
+        body: JSON.stringify({ points: polygonPoints , canvasWidth: rgbCanvas.width, canvasHeight: rgbCanvas.height})
       });
       const data = await response.json();
       console.log("Data received from backend", data);
