@@ -6,7 +6,8 @@ class DirectionSelector extends Component {
     this.directionRef = createRef();
   }
   state = {
-    selectedDirection: null // Stores the currently selected direction
+    selectedDirection: null, // Stores the currently selected direction
+    polygonPoints: []
   };
 
   drawDirections = () => {
@@ -36,6 +37,7 @@ class DirectionSelector extends Component {
     const y = e.clientY - rect.top;
     const width = this.directionRef.current.width;
     const height = this.directionRef.current.height;
+    const position = { x, y }; // Create an object to store the click position
 
     // Using some margins for simplicity in direction detection
     const margin = width * 0.1;
@@ -59,23 +61,33 @@ class DirectionSelector extends Component {
     }
   };
 
-  sendDirectionToBackend = async () => {
-    try {
-      const response = await fetch("/api/direction", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ direction: this.state.selectedDirection })
-      });
-      if (response.ok) {
-        console.log("Direction sent successfully");
-      } else {
-        console.log("Failed to send direction");
-      }
-    } catch (error) {
-      console.error("Failed to send direction", error);
+  sendDataToBackend = () => {
+    const { selectedDirection, polygonPoints } = this.state;
+    const canvas = this.directionRef.current; // 获取正确的canvas引用
+    console.log(selectedDirection, polygonPoints);
+    if (!selectedDirection) {
+      alert("choose a direction");
+      return;
     }
+    fetch("YOUR_BACKEND_URL", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        direction: selectedDirection,
+        points: polygonPoints,
+        canvasWidth: canvas.width, // 使用canvas.width
+        canvasHeight: canvas.height // 使用canvas.height
+      })
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log("successed:", data);
+      })
+      .catch(error => {
+        console.error("failed:", error);
+      });
   };
 
   render() {
@@ -85,7 +97,7 @@ class DirectionSelector extends Component {
         {this.state.selectedDirection && (
           <div>
             <p>Selected Direction: {this.state.selectedDirection}</p>
-            <button onClick={this.sendDirectionToBackend}>Send Direction</button>
+            <button onClick={this.sendDataToBackend}>Send Direction</button>
           </div>
         )}
       </div>

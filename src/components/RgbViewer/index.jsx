@@ -31,7 +31,14 @@ class RgbViewer extends Component {
   state = {
     windowWidth: window.innerWidth,
     windowHeight: window.innerHeight,
-    polygonPoints: [] // 用于存储多边形的顶点
+    polygonPoints: [], // 用于存储多边形的顶点
+    isDrawingMode: false, // 初始时不处于画笔模式
+    originalImageSize: { width: 0, height: 0 } // 存储图片的原始尺寸
+  };
+  toggleDrawingMode = () => {
+    this.setState(prevState => ({
+      isDrawingMode: !prevState.isDrawingMode
+    }));
   };
   componentDidMount() {
     this.handleResize();
@@ -80,11 +87,15 @@ class RgbViewer extends Component {
         rgbImage.src = rgbImageUrl;
       }
       rgbImage.onload = () => {
+        this.setState({
+          originalImageSize: { width: rgbImage.width, height: rgbImage.height }
+        });
         if (Math.max(rgbImage.height, rgbImage.width) > 1000) {
           rgbImage = canvasResize(rgbImage);
         }
         console.log("current canvas size is", rgbImage.width, rgbImage.height);
         initRgb(cloneCanvas(rgbImage));
+        this.redrawCanvas(); // 确保在图片加载后重新绘制
       };
     }
     // If main image changes, add draw/redraw canvas to operation
@@ -290,29 +301,15 @@ class RgbViewer extends Component {
     }
   };
   handleMouseDown = event => {
-    let { memoryRgbCanvas, storeParameters, storeBoxParams } = this.props;
-    if (memoryRgbCanvas) {
-      const rgbCanvas = this.rgbImageRef.current;
-      rgbCanvas.style.cursor = "crosshair";
-      let x = event.offsetX;
-      let y = event.offsetY;
-      storeBoxParams({
-        start: { x1: x, y1: y },
-        end: null
-      });
-      storeParameters({
-        croppedCanvasImage: null,
-        croppedArea: null,
-        histogramParams: {
-          pixelRange: [0, 255],
-          domain: [0, 255],
-          values: [0, 255],
-          update: [0, 255]
-        }
-      });
+    if (this.state.isDrawingMode) {
+      const { offsetX, offsetY } = event.nativeEvent;
+      this.setState(prevState => ({
+        polygonPoints: [...prevState.polygonPoints, { x: offsetX, y: offsetY }]
+      }));
     }
   };
   handleMouseMove = event => {
+    if (!this.state.isDrawingMode || event.buttons !== 1) return; // 如果不是画笔模式或鼠标左键未按下，不做处理
     let { memoryRgbCanvas, boxParams, storeBoxParams } = this.props;
     if (event.buttons !== 1 || !boxParams.start) return;
     if (memoryRgbCanvas) {
@@ -490,17 +487,21 @@ class RgbViewer extends Component {
     this.setState({ polygonPoints: [] }, this.redrawCanvas);
   };
   redrawCanvas = () => {
-    const { rgbImageRef } = this;
-    const ctx = rgbImageRef.current.getContext("2d");
-    const { rgbImageUrl } = this.props;
-    // 首先清空画布
-    ctx.clearRect(0, 0, rgbImageRef.current.width, rgbImageRef.current.height);
-    // 重绘图像
+    const ctx = this.rgbImageRef.current.getContext("2d");
+    ctx.clearRect(0, 0, this.rgbImageRef.current.width, this.rgbImageRef.current.height);
     let rgbImage = new Image();
-    rgbImage.src = rgbImageUrl;
+    rgbImage.src = this.props.rgbImageUrl;
     rgbImage.onload = () => {
-      ctx.drawImage(rgbImage, 0, 0, rgbImageRef.current.width, rgbImageRef.current.height);
-      this.drawPolygon(); // 重新绘制多边形
+      const scaleWidth = this.rgbImageRef.current.width / this.state.originalImageSize.width;
+      const scaleHeight = this.rgbImageRef.current.height / this.state.originalImageSize.height;
+      ctx.drawImage(rgbImage, 0, 0, this.rgbImageRef.current.width, this.rgbImageRef.current.height);
+      this.state.polygonPoints.forEach(point => {
+        // Scale points based on current canvas size
+        const scaledX = point.x * scaleWidth;
+        const scaledY = point.y * scaleHeight;
+        // Here you might want to use ctx.arc() or ctx.fillRect() to mark the points
+        ctx.fillRect(scaledX, scaledY, 5, 5); // Example: Draw a small box at the point
+      });
     };
   };
   //backend URL selection
