@@ -54,9 +54,10 @@ class RgbViewer extends Component {
     canvas.removeEventListener("click", this.addPolygonPoint);
     canvas.removeEventListener("dblclick", this.closePolygon);
   }
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     let { rgbImageRef } = this;
     let {
+      pointerList,
       rgbImageUrl,
       mainRgbCanvas,
       memoryRgbCanvas,
@@ -77,6 +78,10 @@ class RgbViewer extends Component {
     let rgbCanvas = rgbImageRef.current;
     let rgbContext = rgbCanvas.getContext("2d");
     // Load image and initialize all canvas images
+    if (prevState.polygonPoints !== this.state.polygonPoints) {
+      // Dispatch the action with the new polygon points
+      this.props.point_list_update(this.state.polygonPoints);
+    }
     if (prevProps.rgbImageUrl !== rgbImageUrl) {
       rgbContext.clearRect(0, 0, prevRgbSize.width, prevRgbSize.height);
       let rgbImage = new Image();
@@ -300,6 +305,7 @@ class RgbViewer extends Component {
       }
     }
   };
+
   handleMouseDown = event => {
     if (this.state.isDrawingMode) {
       const { offsetX, offsetY } = event.nativeEvent;
@@ -526,6 +532,7 @@ class RgbViewer extends Component {
 }
 
 const mapStateToProps = state => ({
+  pointerList: imageSelectors.pointerList(state),
   rgbImageUrl: imageSelectors.rgbImageUrl(state),
   mainRgbCanvas: imageSelectors.mainRgbCanvas(state),
   memoryRgbCanvas: imageSelectors.memoryRgbCanvas(state),
@@ -541,6 +548,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  point_list_update: imageActions.point_list_update,
   normal_map_change: imageActions.normal_map_change,
   initImage: imageActions.initImage,
   initRgb: imageActions.initRgb,

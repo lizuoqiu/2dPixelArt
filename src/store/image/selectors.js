@@ -1,4 +1,5 @@
 export const selectors = {
+  pointerList: state => state.image.pointerList,
   rgbImageUrl: state => state.image.rgbImageUrl,
   depthImageUrl: state => state.image.depthImageUrl,
   selectionImageUrl: state => state.image.selectionImageUrl,

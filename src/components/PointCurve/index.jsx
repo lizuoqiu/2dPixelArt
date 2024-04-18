@@ -1,4 +1,6 @@
 import React, { Component, createRef } from "react";
+import { connect } from "react-redux";
+import { selectors as imageSelectors } from "../../store/image";
 
 class DirectionSelector extends Component {
   constructor() {
@@ -64,21 +66,22 @@ class DirectionSelector extends Component {
   sendDataToBackend = () => {
     const { selectedDirection, polygonPoints } = this.state;
     const canvas = this.directionRef.current; // 获取正确的canvas引用
-    console.log(selectedDirection, polygonPoints);
+    const { pointerList } = this.props; // Access pointerList from props
+    console.log(selectedDirection, pointerList);
     if (!selectedDirection) {
       alert("choose a direction");
       return;
     }
-    fetch("YOUR_BACKEND_URL", {
+    fetch("http://127.0.0.1:5000/update_normal_map", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         direction: selectedDirection,
-        points: polygonPoints,
         canvasWidth: canvas.width, // 使用canvas.width
-        canvasHeight: canvas.height // 使用canvas.height
+        canvasHeight: canvas.height, // 使用canvas.height
+        pointerList: pointerList
       })
     })
       .then(response => response.json())
@@ -104,5 +107,8 @@ class DirectionSelector extends Component {
     );
   }
 }
+const mapStateToProps = state => ({
+  pointerList: imageSelectors.pointerList(state) // Assuming the existence of this selector
+});
 
-export default DirectionSelector;
+export default connect(mapStateToProps)(DirectionSelector);

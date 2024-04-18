@@ -2,6 +2,7 @@ import { canvasLike, cloneCanvas, mergeBitmap } from "utils/canvasUtils";
 import { types } from "./constants";
 
 const initialState = {
+  pointerList: [],
   rgbImageUrl: null,
   depthImageUrl: null,
   selectionImageUrl: null,
@@ -80,6 +81,11 @@ const initialState = {
 
 export const imageReducer = (state = initialState, { type, payload }) => {
   switch (type) {
+    case types.POINTER_LIST_CHANGE:
+      return {
+        ...state,
+        pointerList: payload
+      };
     case types.NORMAL_MAP_CHANGE:
       return {
         ...state,

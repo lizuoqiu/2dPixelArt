@@ -62,10 +62,11 @@ export function ImageEditor({
         method: "POST",
         body: formData
       }); // Upload the file
+      console.log(response);
       if (response.ok) {
         const data = await response.json(); // Process the response
         // console.error(data["normal_map"]);
-        // console.log(data);
+        console.log(data);
         const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
         // console.log(normal_map_base64String);
         const img = new Image();

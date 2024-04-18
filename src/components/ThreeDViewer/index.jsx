@@ -18,8 +18,8 @@ function ImageViewer() {
         const parentDiv = canvas.parentElement;
         const { width: parentWidth, height: parentHeight } = parentDiv.getBoundingClientRect();
 
-        const scaleWidth = (parentWidth * 0.75) / image.width;
-        const scaleHeight = (parentHeight * 0.75) / image.height;
+        const scaleWidth = (parentWidth * 0.9) / image.width;
+        const scaleHeight = (parentHeight * 0.9) / image.height;
         const scale = Math.min(scaleWidth, scaleHeight, 1); // 确保不放大超过原始尺寸
 
         const canvasWidth = image.width * scale;
@@ -48,8 +48,8 @@ function ImageViewer() {
         const parentDiv = canvas.parentElement;
         const rect = parentDiv.getBoundingClientRect(); // 这里获取宽高
 
-        const scaleWidth = (rect.width * 0.75) / imageObject.width;
-        const scaleHeight = (rect.height * 0.75) / imageObject.height;
+        const scaleWidth = (rect.width * 0.9) / imageObject.width;
+        const scaleHeight = (rect.height * 0.9) / imageObject.height;
         const scale = Math.min(scaleWidth, scaleHeight, 1); // 确保不放大超过原始尺寸
 
         const canvasWidth = imageObject.width * scale;
