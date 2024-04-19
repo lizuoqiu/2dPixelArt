@@ -66,7 +66,7 @@ class DirectionSelector extends Component {
   sendDataToBackend = () => {
     const { selectedDirection, polygonPoints } = this.state;
     const canvas = this.directionRef.current; // 获取正确的canvas引用
-    const { pointerList } = this.props; // Access pointerList from props
+    const { pointerList, canvasSize } = this.props; // Access pointerList from props
     console.log(selectedDirection, pointerList, canvasSize);
     if (!selectedDirection) {
       alert("choose a direction");
@@ -79,8 +79,6 @@ class DirectionSelector extends Component {
       },
       body: JSON.stringify({
         direction: selectedDirection,
-        canvasWidth: canvas.width, // 使用canvas.width
-        canvasHeight: canvas.height, // 使用canvas.height
         pointerList: pointerList,
         canvasSize: canvasSize
       })

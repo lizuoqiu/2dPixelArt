@@ -21,5 +21,6 @@ export const selectors = {
   activeDepthTool: state => state.image.activeDepthTool,
   toolsParameters: state => state.image.toolsParameters,
   parameters: state => state.image.parameters,
-  operationStack: state => state.image.operationStack
+  operationStack: state => state.image.operationStack,
+  canvasSize: state => state.image.canvasSize
 };

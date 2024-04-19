@@ -47,6 +47,9 @@ class RgbViewer extends Component {
     const canvas = this.rgbImageRef.current;
     canvas.addEventListener("click", this.addPolygonPoint); // 处理点击事件以添加多边形的点
     canvas.addEventListener("dblclick", this.closePolygon); // 双击来闭合多边形
+    let width = canvas.width;
+    let height = canvas.height;
+    this.props.canvas_size_update({ width, height });
   }
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleResize);
@@ -77,15 +80,16 @@ class RgbViewer extends Component {
       addEffect
     } = this.props;
     let rgbCanvas = rgbImageRef.current;
-    let width = rgbCanvas.width;
-    let height = rgbCanvas.height;
-    this.props.canvas_size_update({width, height});
+    // let width = rgbCanvas.width;
+    // let height = rgbCanvas.height;
+    // this.props.canvas_size_update({ width, height });
     let rgbContext = rgbCanvas.getContext("2d");
-    if(prevState.rgbCanvas.width != this.state.rgbCanvas.width || prevState.rgbCanvas.height != this.state.rgbCanvas.height){
-      let width = rgbCanvas.width;
-      let height = rgbCanvas.height;
-      this.props.canvas_size_update({width, height});
-    }
+    // if (prevProps.windowWidth != this.state.windowWidth || prevProps.windowHeight != this.state.windowHeight) {
+    //   let rgbCanvas = rgbImageRef.current;
+    //   width = rgbCanvas.width;
+    //   height = rgbCanvas.height;
+    //   this.props.canvas_size_update({ width, height });
+    // }
     // Load image and initialize all canvas images
     if (prevState.polygonPoints !== this.state.polygonPoints) {
       // Dispatch the action with the new polygon points

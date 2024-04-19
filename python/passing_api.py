@@ -91,12 +91,14 @@ def update_normal_map():
     }
     # Now you can access your points array from the data
     if data:
+        # print(data)
         direction = data.get('direction')
-        canvas_width = data.get('canvasWidth')
-        canvas_height = data.get('canvasHeight')
+        canvas_size = data.get('canvasSize')
+        canvas_width = canvas_size['width']
+        canvas_height = canvas_size['height']
         points = data.get('pointerList') if data else None
         point_tuples = [(point['x'], point['y']) for point in points]
-        norm_direction = [127, 217, 217]  # TODO: grab input from the front end
+        norm_direction = norm_dict[direction]  # TODO: grab input from the front end
         input_np = np.array(input)
         print(canvas_width, canvas_height)
         print(point_tuples)

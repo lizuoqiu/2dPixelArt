@@ -3,7 +3,7 @@ import { types } from "./constants";
 import { Plane } from "@react-three/drei";
 
 const initialState = {
-  canvasSize: {width: null, height: null},
+  canvasSize: { width: null, height: null },
   pointerList: [],
   rgbImageUrl: null,
   depthImageUrl: null,
@@ -87,7 +87,7 @@ export const imageReducer = (state = initialState, { type, payload }) => {
       return {
         ...state,
         canvasSize: payload
-      }
+      };
     case types.POINTER_LIST_CHANGE:
       return {
         ...state,
