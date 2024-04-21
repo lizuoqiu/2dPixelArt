@@ -516,7 +516,6 @@ class RgbViewer extends Component {
     this.setState({ polygonPoints: [] }, this.redrawCanvas);
   };
   redrawCanvas = () => {
-    console.log("=====================");
     let { mainRgbCanvas, initImage, storeScaleParams } = this.props;
     const ctx = this.rgbImageRef.current.getContext("2d");
     const rgbCanvas = this.rgbImageRef.current;
@@ -538,7 +537,7 @@ class RgbViewer extends Component {
     try {
       console.log(polygonPoints);
       const rgbCanvas = this.rgbImageRef.current;
-      const response = await fetch("http://127.0.0.1:5000/update_normal_map", {
+      const response = await fetch("http://localhost:5000/update_normal_map", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

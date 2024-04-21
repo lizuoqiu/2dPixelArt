@@ -72,8 +72,6 @@ def apply_shading(base_image, normal_map, light_sources, ambient_light, norm_pre
 if __name__ == '__main__':
     base_image = load_image("01_minimum_rgb.png")
     normal_map = load_image("02_basicLines_normal.png")
-    print(base_image.shape)
-    print(normal_map.shape)
     light_sources = [
         # {'position': np.array([0, 30, 5], dtype='float64'), 'color': np.array([1, 0, 0])},  # r
         # {'position': np.array([-30, -30, 5], dtype='float64'), 'color': np.array([0, 1, 0])},  # g
@@ -90,6 +88,5 @@ if __name__ == '__main__':
 
     shaded_image = apply_shading(base_image, normal_map, light_sources, ambient_light)
 
-    cv2.imshow('Shaded Image', cv2.cvtColor(shaded_image, cv2.COLOR_RGB2BGR))
     cv2.waitKey(0)
     cv2.destroyAllWindows()

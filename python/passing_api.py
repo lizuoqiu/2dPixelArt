@@ -11,7 +11,7 @@ from torchvision import transforms
 to_pil = transforms.ToPILImage()
 
 app = Flask(__name__)
-CORS(app)  # Ensure there's a folder for uploads
+CORS(app, origins=["http://localhost:3000"], methods=["GET", "POST"], headers=["Content-Type"])
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -43,22 +43,12 @@ def upload_file():
         # norm_map
         img_io = BytesIO()
         light_sources = [
-            # {'position': np.array([0, 30, 5], dtype='float64'), 'color': np.array([1, 0, 0])},  # r
-            # {'position': np.array([-30, -30, 5], dtype='float64'), 'color': np.array([0, 1, 0])},  # g
-            # {'position': np.array([30, -30, 5], dtype='float64'), 'color': np.array([0, 0, 1])},  # b
-            # {'position': np.array([-30,0,5], dtype='float64'), 'color': np.array([1, 0, 0])},  # r
-            # {'position': np.array([30,0,5], dtype='float64'), 'color': np.array([0, 1, 0])},  # g
-            {'position': np.array([30, 0, 5], dtype='float64'), 'color': np.array([1, 1, 1])},  # r
-            {'position': np.array([-30, 0, 5], dtype='float64'), 'color': np.array([1, 1, 1])},  # g
-            # {'position': np.array([0, 0, 5], dtype='float64'), 'color': np.array([1, 1, 1])},  # b
-            # {'position': np.array([-30, -30, 2], dtype='float64'), 'color': np.array([1, 1, 0])},
+            {'position': np.array([0, 0, 5], dtype='float64'), 'color': np.array([1, 1, 1])},
         ]
-        
         ambient_light = np.array([0.5, 0.5, 0.5])
         shaded_image_io = BytesIO()
         norm_map, shaded_image = apply_shading(input, raw_norm_map, light_sources, ambient_light)
         shaded_pil = Image.fromarray(np.uint8(shaded_image))
-        shaded_pil.show()
         shaded_pil.save(shaded_image_io, format="PNG")
         norm_pil = Image.fromarray(np.uint8(norm_map))
         norm_pil.save(img_io, format="PNG")
@@ -149,7 +139,6 @@ def update_normal_map():
 
         norm_map_pil.save(norm_img_io, format="PNG")
         shaded_pil.save(shaded_img_io, format="PNG")
-        shaded_pil.show()
 
         norm_img_io.seek(0)
         shaded_img_io.seek(0)
@@ -158,6 +147,40 @@ def update_normal_map():
         shaded_img_data = base64.b64encode(shaded_img_io.getvalue()).decode('utf-8')
 
         return jsonify({'normal_map': f'{norm_img_data}', "shading_image": f'{shaded_img_data}'}), 200
+
+
+@app.route('/update_light', methods=['POST'])
+def update_light():
+    global norm_map
+    light_sources = []
+    data = request.get_json()
+    light_list = data.get('lightSources')
+    for light in light_list:
+        position = light.get('position')
+        x = position.get('x')
+        y = position.get('y')
+        width = light.get('canvasWidth')
+        height = light.get('canvasHeight')
+        color = light.get('color')
+        r = color.get('r')
+        g = color.get('g')
+        b = color.get('b')
+        [img_w, img_h] = input.size
+        ratio_w = img_w / width
+        ratio_h = img_h / height
+        x = (x * ratio_w - (img_h / 2))
+        y = (y * ratio_h - (img_w / 2))
+        light_sources.append({'position': np.array([y, x, 10], dtype='float64'), 'color': np.array([r/255, g/255, b/255])})
+
+    ambient_light = np.array([0.5, 0.5, 0.5])
+    norm_map, shaded_image = apply_shading(input, norm_map / 255, light_sources, ambient_light, False)
+    shaded_pil = Image.fromarray(np.uint8(shaded_image))
+    shaded_img_io = BytesIO()
+    shaded_pil.save(shaded_img_io, format="PNG")
+    shaded_img_io.seek(0)
+    shaded_img_data = base64.b64encode(shaded_img_io.getvalue()).decode('utf-8')
+    return jsonify({"shading_image": f'{shaded_img_data}'}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
