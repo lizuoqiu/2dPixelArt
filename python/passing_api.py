@@ -67,8 +67,8 @@ def upload_file():
         shaded_image_io.seek(0)
         img_data = base64.b64encode(img_io.getvalue()).decode('utf-8')
         shaded_image_data = base64.b64encode(shaded_image_io.getvalue()).decode('utf-8')
-        print(shaded_image_data)
-        print(img_data)
+        # print(shaded_image_data)
+        # print(img_data)
         return jsonify({'normal_map': f'{img_data}', "shading_image": f'{shaded_image_data}'}), 200
         # return jsonify({'normal_map': f'{img_data}'}), 200
         #
@@ -100,11 +100,11 @@ def update_normal_map():
         point_tuples = [(point['x'], point['y']) for point in points]
         norm_direction = norm_dict[direction]  # TODO: grab input from the front end
         input_np = np.array(input)
-        print(canvas_width, canvas_height)
-        print(point_tuples)
-        print(direction)
-        print(input_np.shape)
-        print(norm_map)
+        # print(canvas_width, canvas_height)
+        # print(point_tuples)
+        # print(direction)
+        # print(input_np.shape)
+        # print(norm_map)
         height, width, _ = input_np.shape
         aspect_ratio = width / height
         scaling_ratio = height / canvas_height
@@ -123,14 +123,41 @@ def update_normal_map():
         new_normal[:, :, 2] = norm_direction[2]
         norm_map[mask == 1] = new_normal[mask == 1]
 
-        mask_pil = Image.fromarray(np.uint8(mask * 255))
-        mask_pil.show()
+        # mask_pil = Image.fromarray(np.uint8(mask * 255))
+        # mask_pil.show()
+
+        light_sources = [
+            # {'position': np.array([0, 30, 5], dtype='float64'), 'color': np.array([1, 0, 0])},  # r
+            # {'position': np.array([-30, -30, 5], dtype='float64'), 'color': np.array([0, 1, 0])},  # g
+            # {'position': np.array([30, -30, 5], dtype='float64'), 'color': np.array([0, 0, 1])},  # b
+            # {'position': np.array([-30,0,5], dtype='float64'), 'color': np.array([1, 0, 0])},  # r
+            # {'position': np.array([30,0,5], dtype='float64'), 'color': np.array([0, 1, 0])},  # g
+            {'position': np.array([30, 0, 5], dtype='float64'), 'color': np.array([1, 1, 1])},  # r
+            {'position': np.array([-30, 0, 5], dtype='float64'), 'color': np.array([1, 1, 1])},  # g
+            # {'position': np.array([0, 0, 5], dtype='float64'), 'color': np.array([1, 1, 1])},  # b
+            # {'position': np.array([-30, -30, 2], dtype='float64'), 'color': np.array([1, 1, 0])},
+        ]
+        ambient_light = np.array([0.5, 0.5, 0.5])
+
+        norm_map, shaded_image = apply_shading(input, norm_map / 255, light_sources, ambient_light, False)
 
         norm_map_pil = Image.fromarray(np.uint8(norm_map))
-        norm_map_pil.show()
+        shaded_pil = Image.fromarray(np.uint8(shaded_image))
 
-        return jsonify({'normal_map': f'okay'}), 200
+        norm_img_io = BytesIO()
+        shaded_img_io = BytesIO()
 
+        norm_map_pil.save(norm_img_io, format="PNG")
+        shaded_pil.save(shaded_img_io, format="PNG")
+        shaded_pil.show()
+
+        norm_img_io.seek(0)
+        shaded_img_io.seek(0)
+
+        norm_img_data = base64.b64encode(norm_img_io.getvalue()).decode('utf-8')
+        shaded_img_data = base64.b64encode(shaded_img_io.getvalue()).decode('utf-8')
+
+        return jsonify({'normal_map': f'{norm_img_data}', "shading_image": f'{shaded_img_data}'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
