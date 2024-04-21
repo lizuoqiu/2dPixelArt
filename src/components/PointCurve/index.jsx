@@ -1,6 +1,6 @@
 import React, { Component, createRef } from "react";
 import { connect } from "react-redux";
-import { selectors as imageSelectors } from "../../store/image";
+import { imageActions, selectors as imageSelectors } from "../../store/image";
 
 class DirectionSelector extends Component {
   constructor() {
@@ -64,6 +64,7 @@ class DirectionSelector extends Component {
   };
 
   sendDataToBackend = () => {
+    const { initDepth } = this.props;
     const { selectedDirection, polygonPoints } = this.state;
     const canvas = this.directionRef.current; // 获取正确的canvas引用
     const { pointerList, canvasSize } = this.props; // Access pointerList from props
@@ -86,6 +87,23 @@ class DirectionSelector extends Component {
       .then(response => response.json())
       .then(data => {
         console.log("successed:", data);
+        console.log(data);
+        const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
+        // console.log(normal_map_base64String);
+        const img = new Image();
+        img.onload = () => {
+          initDepth(img);
+        };
+        img.src = `data:image/jpeg;base64,${normal_map_base64String}`;
+        const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
+        console.log(shading_base64String);
+        const shading_image = new Image();
+        shading_image.onload = () => {
+          window.updateImageViewer(shading_image);
+          console.log("Image loaded, updating viewer..."); // Debug: Ensure this log appears
+          // initDepth(shading_base64String);
+        };
+        shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
       })
       .catch(error => {
         console.error("failed:", error);
@@ -126,4 +144,8 @@ const mapStateToProps = state => ({
   canvasSize: imageSelectors.canvasSize(state)
 });
 
-export default connect(mapStateToProps)(DirectionSelector);
+const mapDispatchToProps = {
+  initDepth: imageActions.initDepth
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(DirectionSelector);
