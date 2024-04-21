@@ -93,13 +93,28 @@ class DirectionSelector extends Component {
   };
 
   render() {
+    const buttonStyle = {
+      backgroundColor: "#4CAF50", // Green background
+      color: "white",
+      padding: "15px 32px",
+      textAlign: "center",
+      textDecoration: "none",
+      display: "inline-block",
+      fontSize: "16px",
+      margin: "4px 2px",
+      cursor: "pointer",
+      borderRadius: "8px" // Rounded corners
+    };
+
     return (
       <div>
         <canvas ref={this.directionRef} width="250" height="250" onClick={this.selectDirection} />
         {this.state.selectedDirection && (
           <div>
             <p>Selected Direction: {this.state.selectedDirection}</p>
-            <button onClick={this.sendDataToBackend}>Send Direction</button>
+            <button style={buttonStyle} onClick={this.sendDataToBackend}>
+              Update Normal Map :)
+            </button>
           </div>
         )}
       </div>
