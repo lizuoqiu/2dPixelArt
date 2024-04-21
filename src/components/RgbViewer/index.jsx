@@ -20,6 +20,7 @@ import {
   highlightPixelAreaRgb
 } from "utils/canvasUtils";
 import { runRgbOperations } from "utils/stackOperations";
+// import { addEffect } from "@react-three/fiber";
 
 let objectUrl = null;
 
@@ -113,7 +114,9 @@ class RgbViewer extends Component {
         }
         console.log("current canvas size is", rgbImage.width, rgbImage.height);
         initRgb(cloneCanvas(rgbImage));
-        this.redrawCanvas(); // 确保在图片加载后重新绘制
+        // if (this.state.polygonPoints) {
+        //   this.redrawCanvas(); // 确保在图片加载后重新绘制
+        // }
       };
     }
     // If main image changes, add draw/redraw canvas to operation
@@ -377,6 +380,7 @@ class RgbViewer extends Component {
     );
   };
   drawPolygon = () => {
+    console.log("drawPolygon");
     const { polygonPoints } = this.state;
     const ctx = this.rgbImageRef.current.getContext("2d");
     ctx.beginPath();
@@ -497,7 +501,14 @@ class RgbViewer extends Component {
   undoLastPoint = () => {
     const { polygonPoints } = this.state;
     if (polygonPoints.length > 0) {
-      this.setState({ polygonPoints: polygonPoints.slice(0, -1) }, this.redrawCanvas);
+      this.setState(
+        {
+          polygonPoints: polygonPoints.slice(0, -1)
+        },
+        () => {
+          this.redrawCanvas();
+        }
+      );
     }
   };
 
@@ -505,22 +516,21 @@ class RgbViewer extends Component {
     this.setState({ polygonPoints: [] }, this.redrawCanvas);
   };
   redrawCanvas = () => {
+    console.log("=====================");
+    let { mainRgbCanvas, initImage, storeScaleParams } = this.props;
     const ctx = this.rgbImageRef.current.getContext("2d");
-    ctx.clearRect(0, 0, this.rgbImageRef.current.width, this.rgbImageRef.current.height);
-    let rgbImage = new Image();
-    rgbImage.src = this.props.rgbImageUrl;
-    rgbImage.onload = () => {
-      const scaleWidth = this.rgbImageRef.current.width / this.state.originalImageSize.width;
-      const scaleHeight = this.rgbImageRef.current.height / this.state.originalImageSize.height;
-      ctx.drawImage(rgbImage, 0, 0, this.rgbImageRef.current.width, this.rgbImageRef.current.height);
-      this.state.polygonPoints.forEach(point => {
-        // Scale points based on current canvas size
-        const scaledX = point.x * scaleWidth;
-        const scaledY = point.y * scaleHeight;
-        // Here you might want to use ctx.arc() or ctx.fillRect() to mark the points
-        ctx.fillRect(scaledX, scaledY, 5, 5); // Example: Draw a small box at the point
-      });
-    };
+    const rgbCanvas = this.rgbImageRef.current;
+    ctx.clearRect(0, 0, rgbCanvas.width, rgbCanvas.height);
+    const { ratio, centerShift_x, centerShift_y } = getRatio(mainRgbCanvas, rgbCanvas);
+    console.log(ratio);
+    ctx.drawImage(
+      mainRgbCanvas,
+      centerShift_x,
+      centerShift_y,
+      mainRgbCanvas.width * ratio,
+      mainRgbCanvas.height * ratio
+    ); // Redraw the base image
+    this.drawPolygon();
   };
   //backend URL selection
   sendDataToBackend = async () => {
