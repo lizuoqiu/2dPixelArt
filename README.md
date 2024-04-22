@@ -11,6 +11,33 @@ This application requires NodeJs to run. Follow the installation guide below to 
 
 NOTE: This application runs only on the web browser and does not interact with a backend server.
 
+### BackEnd Setup
+Our backend server is running at Flask API and we introduce the Omidata as AI surface normal estimator.
+
+### Initial Environment Setup
+We have pre-set environment file on root repository, please use conda to manage environment:
+- `conda env create -f environment.yml`
+After set the conda environment, you need to download the pretrained models from:
+
+https://drive.usercontent.google.com/download?id=1wNxVO4vVbDEMEpnAi_jwQObf2MFodcBR&authuser=0
+
+And place to `python/omnidata_main/omnidata_tools/torch/pretrained_models`
+
+Or you can use the Script to download the models:
+
+`sh python/omnidata_main/omnidata_tools/torchpython/omnidata_main/omnidata_tools/torch/tools/download_depth_models.sh`
+
+`sh python/omnidata_main/omnidata_tools/torch/tools/download_surface_normal_models.sh`
+
+It will create the folder and download the models.
+
+### Back-end Start
+Use following command to start the web server:
+
+`cd python`
+
+`python passing_api.py`
+
 ### Installation
 
 Download and install Nodejs from the [official website](https://nodejs.org/en/download/).
