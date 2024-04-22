@@ -20,7 +20,6 @@ import {
   highlightPixelAreaRgb
 } from "utils/canvasUtils";
 import { runRgbOperations } from "utils/stackOperations";
-// import { addEffect } from "@react-three/fiber";
 
 let objectUrl = null;
 
@@ -32,9 +31,9 @@ class RgbViewer extends Component {
   state = {
     windowWidth: window.innerWidth,
     windowHeight: window.innerHeight,
-    polygonPoints: [], // Used to store the vertices of the polygon
-    isDrawingMode: false, // Not in brush mode initially
-    originalImageSize: { width: 0, height: 0 } // Store the original size of the picture
+    polygonPoints: [],
+    isDrawingMode: false,
+    originalImageSize: { width: 0, height: 0 }
   };
   toggleDrawingMode = () => {
     this.setState(prevState => ({
@@ -44,10 +43,9 @@ class RgbViewer extends Component {
   componentDidMount() {
     this.handleResize();
     window.addEventListener("resize", this.handleResize);
-    // 添加绘图事件监听器
     const canvas = this.rgbImageRef.current;
-    canvas.addEventListener("click", this.addPolygonPoint); // Handles click events to add polygon points
-    canvas.addEventListener("dblclick", this.closePolygon); // Double click to close the polygon
+    canvas.addEventListener("click", this.addPolygonPoint);
+    canvas.addEventListener("dblclick", this.closePolygon);
     let width = canvas.width;
     let height = canvas.height;
     this.props.canvas_size_update({ width, height });
@@ -81,19 +79,8 @@ class RgbViewer extends Component {
       addEffect
     } = this.props;
     let rgbCanvas = rgbImageRef.current;
-    // let width = rgbCanvas.width;
-    // let height = rgbCanvas.height;
-    // this.props.canvas_size_update({ width, height });
     let rgbContext = rgbCanvas.getContext("2d");
-    // if (prevProps.windowWidth != this.state.windowWidth || prevProps.windowHeight != this.state.windowHeight) {
-    //   let rgbCanvas = rgbImageRef.current;
-    //   width = rgbCanvas.width;
-    //   height = rgbCanvas.height;
-    //   this.props.canvas_size_update({ width, height });
-    // }
-    // Load image and initialize all canvas images
     if (prevState.polygonPoints !== this.state.polygonPoints) {
-      // Dispatch the action with the new polygon points
       this.props.point_list_update(this.state.polygonPoints);
     }
     if (prevProps.rgbImageUrl !== rgbImageUrl) {
@@ -113,12 +100,8 @@ class RgbViewer extends Component {
           rgbImage = canvasResize(rgbImage);
         }
         initRgb(cloneCanvas(rgbImage));
-        // if (this.state.polygonPoints) {
-        //   this.redrawCanvas();
-        // }
       };
     }
-    // If main image changes, add draw/redraw canvas to operation
     if (prevProps.mainRgbCanvas !== mainRgbCanvas) {
       if (mainRgbCanvas) {
         const { ratio, centerShift_x, centerShift_y } = getRatio(mainRgbCanvas, rgbCanvas);
@@ -135,7 +118,6 @@ class RgbViewer extends Component {
         });
       }
     }
-    // If operation is added to the stack, rerun all operations in operation stack
     if (prevProps.operationStack.rgbStack !== operationStack.rgbStack) {
       if (mainRgbCanvas) {
         runRgbOperations(mainRgbCanvas);
@@ -209,7 +191,6 @@ class RgbViewer extends Component {
         rgbCanvas.addEventListener("mousemove", this.handleMouseMove);
       }
     }
-    // Listens for mouse movements around the depth canvas and draw bounding box
     if (prevProps.activeDepthTool !== activeDepthTool) {
       if (activeDepthTool) {
         if (!isPanActive) {
@@ -256,9 +237,9 @@ class RgbViewer extends Component {
         if (Math.max(rgbImage.height, rgbImage.width) > 1000) {
           rgbImage = canvasResize(rgbImage);
         }
-        rgbCanvas.getContext("2d").drawImage(rgbImage, 0, 0, rgbCanvas.width, rgbCanvas.height); // Ensure image covers the whole canvas
+        rgbCanvas.getContext("2d").drawImage(rgbImage, 0, 0, rgbCanvas.width, rgbCanvas.height);
         initRgb(cloneCanvas(rgbImage));
-        this.drawPolygon(); // Redraw the polygon on top of the loaded image
+        this.drawPolygon();
       };
     }
   }
@@ -405,7 +386,7 @@ class RgbViewer extends Component {
     const { rgbImageRef } = this;
     const { rgbScaleParams, depthScaleParams, isPanActive, activeDepthTool, storeScaleParams } = this.props;
     const buttonStyle = {
-      backgroundColor: "#4CAF50", // Green background
+      backgroundColor: "#4CAF50",
       color: "white",
       padding: "15px 32px",
       textAlign: "center",
@@ -414,7 +395,7 @@ class RgbViewer extends Component {
       fontSize: "16px",
       margin: "4px 2px",
       cursor: "pointer",
-      borderRadius: "8px" // Rounded corners
+      borderRadius: "8px"
     };
     return (
       <RgbViewerStyle>
@@ -540,10 +521,9 @@ class RgbViewer extends Component {
       centerShift_y,
       mainRgbCanvas.width * ratio,
       mainRgbCanvas.height * ratio
-    ); // Redraw the base image
+    );
     this.drawPolygon();
   };
-  //backend URL selection
   sendDataToBackend = async () => {
     const { polygonPoints } = this.state;
     try {
