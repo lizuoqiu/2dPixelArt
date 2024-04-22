@@ -29,7 +29,11 @@ function LightSource({
 
   const handleContextMenu = event => {
     event.preventDefault();
-    setContextMenuVisible(true);
+    if (contextMenuVisible) {
+      setContextMenuVisible(false);
+    } else {
+      setContextMenuVisible(true);
+    }
   };
 
   const handleDelete = () => {
