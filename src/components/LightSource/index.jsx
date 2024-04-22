@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLightbulb } from "@fortawesome/free-solid-svg-icons";
+import { faLightbulb, faTrash, faPalette } from "@fortawesome/free-solid-svg-icons";
 import { SketchPicker } from "react-color"; // Color picker from react-color
 
 function LightSource({
@@ -9,11 +9,13 @@ function LightSource({
   onPositionChange,
   onDelete,
   canvasParent,
+  canvasBounds,
   onColorChange
 }) {
   const [position, setPosition] = useState(initialPosition);
   const [color, setColor] = useState(initialColor);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [contextMenuVisible, setContextMenuVisible] = useState(false);
 
   const handleDragEnd = event => {
     const newX = event.clientX;
@@ -21,26 +23,38 @@ function LightSource({
     const adjustedX = newX - canvasParent.left;
     const adjustedY = newY - canvasParent.top;
     const newPosition = { x: adjustedX, y: adjustedY };
+    console.log("new point position: ", newPosition);
     onPositionChange(newPosition);
     setPosition(newPosition);
   };
 
-  const handleRightClick = event => {
-    event.preventDefault(); // Prevent default context menu
+  const handleContextMenu = event => {
+    event.preventDefault();
+    setContextMenuVisible(true);
+  };
+
+  const handleDelete = () => {
+    onDelete();
+    setContextMenuVisible(false);
+  };
+
+  const handleColorPicker = () => {
     setShowColorPicker(!showColorPicker);
+    setContextMenuVisible(false);
   };
 
   const handleColorChange = newColor => {
     setColor(newColor.hex);
     onColorChange(newColor.hex);
     setShowColorPicker(false); // Close the color picker
+    setContextMenuVisible(false);
   };
 
   return (
     <div
       draggable
       onDragEnd={handleDragEnd}
-      onContextMenu={handleRightClick}
+      onContextMenu={handleContextMenu}
       style={{
         position: "absolute",
         top: `${position.y}px`,
@@ -52,10 +66,30 @@ function LightSource({
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        cursor: "move"
+        cursor: "move",
+        zIndex: 999
       }}
     >
       <FontAwesomeIcon icon={faLightbulb} />
+      {contextMenuVisible && (
+        <div
+          style={{
+            position: "absolute",
+            top: `25px`,
+            left: `25px`,
+            background: "#f9f9f9",
+            border: "1px solid #ccc",
+            padding: "10px"
+          }}
+        >
+          <div onClick={handleDelete} style={{ cursor: "pointer", marginBottom: "10px" }}>
+            <FontAwesomeIcon icon={faTrash} /> Delete
+          </div>
+          <div onClick={handleColorPicker} style={{ cursor: "pointer" }}>
+            <FontAwesomeIcon icon={faPalette} /> Change Color
+          </div>
+        </div>
+      )}
       {showColorPicker && (
         <div style={{ position: "absolute", top: 30 }}>
           <SketchPicker color={color} onChangeComplete={handleColorChange} />
