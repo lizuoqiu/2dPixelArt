@@ -42,7 +42,7 @@ class DirectionSelector extends Component {
     const position = { x, y }; // Create an object to store the click position
 
     // Using some margins for simplicity in direction detection
-    const margin = width * 0.1;
+    const margin = width * 0.3;
 
     if (x < margin && y < margin) {
       this.setState({ selectedDirection: "TOP-LEFT" });
@@ -66,7 +66,6 @@ class DirectionSelector extends Component {
   sendDataToBackend = () => {
     const { initDepth } = this.props;
     const { selectedDirection, polygonPoints } = this.state;
-    const canvas = this.directionRef.current; // 获取正确的canvas引用
     const { pointerList, canvasSize } = this.props; // Access pointerList from props
     console.log(selectedDirection, pointerList, canvasSize);
     if (!selectedDirection) {
@@ -129,7 +128,7 @@ class DirectionSelector extends Component {
         <canvas ref={this.directionRef} width="250" height="250" onClick={this.selectDirection} />
         {this.state.selectedDirection && (
           <div>
-            <p>Selected Direction: {this.state.selectedDirection}</p>
+            <p style={{ color: "white" }}>Selected Direction: {this.state.selectedDirection}</p>
             <button style={buttonStyle} onClick={this.sendDataToBackend}>
               Update Normal Map :)
             </button>

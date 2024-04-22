@@ -17,16 +17,12 @@ class CombinedInfoSender extends Component {
   drawDirections = () => {
     const canvas = this.canvasRef.current;
     const ctx = canvas.getContext("2d");
-    // Drawing logic
   };
 
-  selectDirection = e => {
-    // Direction selection logic
-  };
+  selectDirection = e => {};
 
   handlePointSelection = e => {
-    // Click logic, such as adding a point to a state
-    const newPoint = { x: e.clientX, y: e.clientY }; // 示例点数据
+    const newPoint = { x: e.clientX, y: e.clientY };
     this.setState(prevState => ({
       points: [...prevState.points, newPoint]
     }));
@@ -61,7 +57,7 @@ class CombinedInfoSender extends Component {
         {this.state.points.length > 0 && (
           <ul>
             {this.state.points.map((point, index) => (
-              <li key={index}>{`点${index + 1}: (${point.x}, ${point.y})`}</li>
+              <li key={index}>{`${index + 1}: (${point.x}, ${point.y})`}</li>
             ))}
           </ul>
         )}

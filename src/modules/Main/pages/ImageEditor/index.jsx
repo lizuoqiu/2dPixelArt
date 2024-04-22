@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import { imageActions } from "store/image";
@@ -11,7 +11,8 @@ import {
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
-  UncontrolledTooltip
+  UncontrolledTooltip,
+  Spinner
 } from "reactstrap";
 import { AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
 import { MdOutlinePanTool } from "react-icons/md";
@@ -49,9 +50,11 @@ export function ImageEditor({
   initDepth,
   updateLayer
 }) {
+  const [isLoading, setIsLoading] = useState(false); // 用于控制加载动画的状态
   const onHandleChange = async e => {
     const file = e.target.files[0]; // Get the file from the event
     if (!file) return; // Exit if no file is selected
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("file", file); // Prepare the file for uploading
     // e.target.name = "depthImageUrl";
@@ -78,10 +81,8 @@ export function ImageEditor({
         console.log(shading_base64String);
         const shading_image = new Image();
         shading_image.onload = () => {
-          // TODO: Replace by the image update function from 3d viewer
           window.updateImageViewer(shading_image);
           console.log("Image loaded, updating viewer..."); // Debug: Ensure this log appears
-          // initDepth(shading_base64String);
         };
         shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
       } else {
@@ -91,6 +92,7 @@ export function ImageEditor({
       console.error("Error:", error);
     }
     handleChange(e); // Handle the change event (first part)
+    setIsLoading(false);
   };
   const openAttachment = id => {
     document.getElementById(id).click();
@@ -101,7 +103,6 @@ export function ImageEditor({
       depthImageUrl: SampleDepth
     });
   };
-  useEffect(loadSample, []);
   useEffect(() => {
     if (selectionImageUrl) {
       let selectionImage = new Image();
@@ -138,6 +139,12 @@ export function ImageEditor({
       <Helmet>
         <title>CP Lab Depth Editing Application</title>
       </Helmet>
+      {isLoading && (
+        <div className="loading-overlay">
+          <Spinner color="primary" /> {/* 使用 Spinner 来显示加载动画 */}
+          <p>Loading...</p>
+        </div>
+      )}
       <header>
         <input
           id="upload-rgb-image"
