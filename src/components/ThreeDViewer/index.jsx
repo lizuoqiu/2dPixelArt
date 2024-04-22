@@ -231,7 +231,6 @@ function ImageViewer() {
           onDelete={() => handleDeleteLightSource(index)}
           onColorChange={newColor => handleColorChange(index, newColor)}
           canvasParent={canvasParent}
-          canvasBounds={canvasBounds}
         />
       ))}
       <canvas ref={canvasRef} />

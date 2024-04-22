@@ -9,7 +9,6 @@ function LightSource({
   onPositionChange,
   onDelete,
   canvasParent,
-  canvasBounds,
   onColorChange
 }) {
   const [position, setPosition] = useState(initialPosition);
