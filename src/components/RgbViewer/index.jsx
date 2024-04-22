@@ -112,7 +112,7 @@ class RgbViewer extends Component {
         addEffect({
           name: "rgbStack",
           value: {
-            func: drawCanvasImage,
+            func: drawCanvasImage, //Draws an entire canvas onto another canvas
             params: []
           }
         });
@@ -149,7 +149,7 @@ class RgbViewer extends Component {
           if (croppedArea) {
             newArea = croppedArea;
           } else {
-            newArea = getBoundingArea(memoryRgbCanvas);
+            newArea = getBoundingArea(memoryRgbCanvas); //Calculates the bounding area for a set of points or shapes
           }
           highlightPixelAreaRgb(
             rgbCanvas,
@@ -235,7 +235,7 @@ class RgbViewer extends Component {
       }
       rgbImage.onload = () => {
         if (Math.max(rgbImage.height, rgbImage.width) > 1000) {
-          rgbImage = canvasResize(rgbImage);
+          rgbImage = canvasResize(rgbImage); //Resizes a given canvas or image
         }
         rgbCanvas.getContext("2d").drawImage(rgbImage, 0, 0, rgbCanvas.width, rgbCanvas.height);
         initRgb(cloneCanvas(rgbImage));
@@ -343,6 +343,7 @@ class RgbViewer extends Component {
       end: null
     });
   };
+  //event handler function that adds a new point to the polygon each time the user clicks on the canvas.
   addPolygonPoint = e => {
     const { offsetX, offsetY } = e;
     const newPoint = { x: offsetX, y: offsetY };
@@ -356,6 +357,7 @@ class RgbViewer extends Component {
       }
     );
   };
+  //draw the polygon on the canvas based on the current list of vertices (polygonPoints).
   drawPolygon = () => {
     const { polygonPoints } = this.state;
     const ctx = this.rgbImageRef.current.getContext("2d");
@@ -369,6 +371,7 @@ class RgbViewer extends Component {
     });
     ctx.stroke();
   };
+  // close the polygon by connecting the last point back to the first point.
   closePolygon = () => {
     const { polygonPoints } = this.state;
     if (polygonPoints.length > 2) {
@@ -492,6 +495,7 @@ class RgbViewer extends Component {
       </RgbViewerStyle>
     );
   }
+  //remove the last point added to the polygon.
   undoLastPoint = () => {
     const { polygonPoints } = this.state;
     if (polygonPoints.length > 0) {
@@ -505,10 +509,11 @@ class RgbViewer extends Component {
       );
     }
   };
-
+  //clears all the points from the polygon
   clearPoints = () => {
     this.setState({ polygonPoints: [] }, this.redrawCanvas);
   };
+  // refreshes the canvas, clearing any existing content and redrawing the stored polygon points
   redrawCanvas = () => {
     let { mainRgbCanvas, initImage, storeScaleParams } = this.props;
     const ctx = this.rgbImageRef.current.getContext("2d");
@@ -524,6 +529,7 @@ class RgbViewer extends Component {
     );
     this.drawPolygon();
   };
+  //send the current polygon data and canvas dimensions to a backend server
   sendDataToBackend = async () => {
     const { polygonPoints } = this.state;
     try {

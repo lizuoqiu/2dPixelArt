@@ -11,11 +11,11 @@ class DirectionSelector extends Component {
     selectedDirection: null,
     polygonPoints: []
   };
-
+  //drawing direction symbols (arrows) at specified positions
   drawDirections = () => {
     const canvas = this.directionRef.current;
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext("2d"); //Retrieves the 2D rendering context for the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height); //Clears the entire canvas to ensure no residual drawings
     ctx.font = "50px Arial";
     ctx.fillText("↑", canvas.width / 2 - 15, 50);
     ctx.fillText("↓", canvas.width / 2 - 15, canvas.height - 20);
@@ -30,7 +30,7 @@ class DirectionSelector extends Component {
   componentDidMount() {
     this.drawDirections();
   }
-
+  //Handles user clicks on the canvas to select a direction based on where they click
   selectDirection = e => {
     const rect = this.directionRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -128,11 +128,12 @@ class DirectionSelector extends Component {
     );
   }
 }
+//Connects part of the Redux state to the component's props
 const mapStateToProps = state => ({
   pointerList: imageSelectors.pointerList(state),
   canvasSize: imageSelectors.canvasSize(state)
 });
-
+//Maps the Redux action creators (initDepth) to prop functions
 const mapDispatchToProps = {
   initDepth: imageActions.initDepth
 };
