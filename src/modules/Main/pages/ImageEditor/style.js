@@ -12,6 +12,20 @@ const ImageEditorStyle = styled.div`
       height: 100%;
     }
   }
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9); // 半透明背景
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999; // 确保在最上层
+    color: white;
+    font-size: 1.5em;
+  }
   header {
     height: 56px;
     background-color: #fff;
