@@ -20,6 +20,7 @@ import {
   highlightPixelAreaRgb
 } from "utils/canvasUtils";
 import { runRgbOperations } from "utils/stackOperations";
+// import { addEffect } from "@react-three/fiber";
 
 let objectUrl = null;
 
@@ -30,15 +31,38 @@ class RgbViewer extends Component {
   }
   state = {
     windowWidth: window.innerWidth,
-    windowHeight: window.innerHeight
+    windowHeight: window.innerHeight,
+    polygonPoints: [], // Used to store the vertices of the polygon
+    isDrawingMode: false, // Not in brush mode initially
+    originalImageSize: { width: 0, height: 0 } // Store the original size of the picture
+  };
+  toggleDrawingMode = () => {
+    this.setState(prevState => ({
+      isDrawingMode: !prevState.isDrawingMode
+    }));
   };
   componentDidMount() {
     this.handleResize();
     window.addEventListener("resize", this.handleResize);
+    // 添加绘图事件监听器
+    const canvas = this.rgbImageRef.current;
+    canvas.addEventListener("click", this.addPolygonPoint); // Handles click events to add polygon points
+    canvas.addEventListener("dblclick", this.closePolygon); // Double click to close the polygon
+    let width = canvas.width;
+    let height = canvas.height;
+    this.props.canvas_size_update({ width, height });
   }
-  componentDidUpdate(prevProps) {
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+    const canvas = this.rgbImageRef.current;
+    canvas.removeEventListener("click", this.addPolygonPoint);
+    canvas.removeEventListener("dblclick", this.closePolygon);
+  }
+  componentDidUpdate(prevProps, prevState) {
     let { rgbImageRef } = this;
     let {
+      canvasSize,
+      pointerList,
       rgbImageUrl,
       mainRgbCanvas,
       memoryRgbCanvas,
@@ -57,8 +81,21 @@ class RgbViewer extends Component {
       addEffect
     } = this.props;
     let rgbCanvas = rgbImageRef.current;
+    // let width = rgbCanvas.width;
+    // let height = rgbCanvas.height;
+    // this.props.canvas_size_update({ width, height });
     let rgbContext = rgbCanvas.getContext("2d");
+    // if (prevProps.windowWidth != this.state.windowWidth || prevProps.windowHeight != this.state.windowHeight) {
+    //   let rgbCanvas = rgbImageRef.current;
+    //   width = rgbCanvas.width;
+    //   height = rgbCanvas.height;
+    //   this.props.canvas_size_update({ width, height });
+    // }
     // Load image and initialize all canvas images
+    if (prevState.polygonPoints !== this.state.polygonPoints) {
+      // Dispatch the action with the new polygon points
+      this.props.point_list_update(this.state.polygonPoints);
+    }
     if (prevProps.rgbImageUrl !== rgbImageUrl) {
       rgbContext.clearRect(0, 0, prevRgbSize.width, prevRgbSize.height);
       let rgbImage = new Image();
@@ -69,10 +106,16 @@ class RgbViewer extends Component {
         rgbImage.src = rgbImageUrl;
       }
       rgbImage.onload = () => {
+        this.setState({
+          originalImageSize: { width: rgbImage.width, height: rgbImage.height }
+        });
         if (Math.max(rgbImage.height, rgbImage.width) > 1000) {
           rgbImage = canvasResize(rgbImage);
         }
         initRgb(cloneCanvas(rgbImage));
+        // if (this.state.polygonPoints) {
+        //   this.redrawCanvas();
+        // }
       };
     }
     // If main image changes, add draw/redraw canvas to operation
@@ -200,6 +243,24 @@ class RgbViewer extends Component {
         });
       }
     }
+    if (prevProps.rgbImageUrl !== rgbImageUrl) {
+      rgbContext.clearRect(0, 0, rgbCanvas.width, rgbCanvas.height);
+      let rgbImage = new Image();
+      if (typeof rgbImageUrl === "object") {
+        objectUrl = getImageUrl(rgbImageUrl);
+        rgbImage.src = objectUrl;
+      } else {
+        rgbImage.src = rgbImageUrl;
+      }
+      rgbImage.onload = () => {
+        if (Math.max(rgbImage.height, rgbImage.width) > 1000) {
+          rgbImage = canvasResize(rgbImage);
+        }
+        rgbCanvas.getContext("2d").drawImage(rgbImage, 0, 0, rgbCanvas.width, rgbCanvas.height); // Ensure image covers the whole canvas
+        initRgb(cloneCanvas(rgbImage));
+        this.drawPolygon(); // Redraw the polygon on top of the loaded image
+      };
+    }
   }
   componentWillUnmount() {
     let rgbCanvas = this.rgbImageRef.current;
@@ -258,30 +319,17 @@ class RgbViewer extends Component {
       }
     }
   };
+
   handleMouseDown = event => {
-    let { memoryRgbCanvas, storeParameters, storeBoxParams } = this.props;
-    if (memoryRgbCanvas) {
-      const rgbCanvas = this.rgbImageRef.current;
-      rgbCanvas.style.cursor = "crosshair";
-      let x = event.offsetX;
-      let y = event.offsetY;
-      storeBoxParams({
-        start: { x1: x, y1: y },
-        end: null
-      });
-      storeParameters({
-        croppedCanvasImage: null,
-        croppedArea: null,
-        histogramParams: {
-          pixelRange: [0, 255],
-          domain: [0, 255],
-          values: [0, 255],
-          update: [0, 255]
-        }
-      });
+    if (this.state.isDrawingMode) {
+      const { offsetX, offsetY } = event.nativeEvent;
+      this.setState(prevState => ({
+        polygonPoints: [...prevState.polygonPoints, { x: offsetX, y: offsetY }]
+      }));
     }
   };
   handleMouseMove = event => {
+    if (!this.state.isDrawingMode || event.buttons !== 1) return;
     let { memoryRgbCanvas, boxParams, storeBoxParams } = this.props;
     if (event.buttons !== 1 || !boxParams.start) return;
     if (memoryRgbCanvas) {
@@ -314,9 +362,60 @@ class RgbViewer extends Component {
       end: null
     });
   };
+  addPolygonPoint = e => {
+    const { offsetX, offsetY } = e;
+    const newPoint = { x: offsetX, y: offsetY };
+    const { polygonPoints } = this.state;
+    this.setState(
+      {
+        polygonPoints: [...polygonPoints, newPoint]
+      },
+      () => {
+        this.drawPolygon();
+      }
+    );
+  };
+  drawPolygon = () => {
+    const { polygonPoints } = this.state;
+    const ctx = this.rgbImageRef.current.getContext("2d");
+    ctx.beginPath();
+    polygonPoints.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else {
+        ctx.lineTo(point.x, point.y);
+      }
+    });
+    ctx.stroke();
+  };
+  closePolygon = () => {
+    const { polygonPoints } = this.state;
+    if (polygonPoints.length > 2) {
+      this.setState(
+        {
+          polygonPoints: [...polygonPoints, polygonPoints[0]]
+        },
+        () => {
+          this.drawPolygon();
+        }
+      );
+    }
+  };
   render() {
     const { rgbImageRef } = this;
     const { rgbScaleParams, depthScaleParams, isPanActive, activeDepthTool, storeScaleParams } = this.props;
+    const buttonStyle = {
+      backgroundColor: "#4CAF50", // Green background
+      color: "white",
+      padding: "15px 32px",
+      textAlign: "center",
+      textDecoration: "none",
+      display: "inline-block",
+      fontSize: "16px",
+      margin: "4px 2px",
+      cursor: "pointer",
+      borderRadius: "8px" // Rounded corners
+    };
     return (
       <RgbViewerStyle>
         <canvas
@@ -401,12 +500,71 @@ class RgbViewer extends Component {
             }
           }}
         ></canvas>
+        <div style={{ textAlign: "center" }}>
+          <button style={buttonStyle} onClick={this.undoLastPoint}>
+            Undo
+          </button>
+          <button style={buttonStyle} onClick={this.clearPoints}>
+            Clear
+          </button>
+        </div>
       </RgbViewerStyle>
     );
   }
+  undoLastPoint = () => {
+    const { polygonPoints } = this.state;
+    if (polygonPoints.length > 0) {
+      this.setState(
+        {
+          polygonPoints: polygonPoints.slice(0, -1)
+        },
+        () => {
+          this.redrawCanvas();
+        }
+      );
+    }
+  };
+
+  clearPoints = () => {
+    this.setState({ polygonPoints: [] }, this.redrawCanvas);
+  };
+  redrawCanvas = () => {
+    let { mainRgbCanvas, initImage, storeScaleParams } = this.props;
+    const ctx = this.rgbImageRef.current.getContext("2d");
+    const rgbCanvas = this.rgbImageRef.current;
+    ctx.clearRect(0, 0, rgbCanvas.width, rgbCanvas.height);
+    const { ratio, centerShift_x, centerShift_y } = getRatio(mainRgbCanvas, rgbCanvas);
+    ctx.drawImage(
+      mainRgbCanvas,
+      centerShift_x,
+      centerShift_y,
+      mainRgbCanvas.width * ratio,
+      mainRgbCanvas.height * ratio
+    ); // Redraw the base image
+    this.drawPolygon();
+  };
+  //backend URL selection
+  sendDataToBackend = async () => {
+    const { polygonPoints } = this.state;
+    try {
+      const rgbCanvas = this.rgbImageRef.current;
+      const response = await fetch("http://localhost:5000/update_normal_map", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ points: polygonPoints, canvasWidth: rgbCanvas.width, canvasHeight: rgbCanvas.height })
+      });
+      const data = await response.json();
+    } catch (error) {
+      console.error("Error sending data to backend", error);
+    }
+  };
 }
 
 const mapStateToProps = state => ({
+  canvasSize: imageSelectors.canvasSize(state),
+  pointerList: imageSelectors.pointerList(state),
   rgbImageUrl: imageSelectors.rgbImageUrl(state),
   mainRgbCanvas: imageSelectors.mainRgbCanvas(state),
   memoryRgbCanvas: imageSelectors.memoryRgbCanvas(state),
@@ -422,6 +580,9 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  canvas_size_update: imageActions.canvas_size_update,
+  point_list_update: imageActions.point_list_update,
+  normal_map_change: imageActions.normal_map_change,
   initImage: imageActions.initImage,
   initRgb: imageActions.initRgb,
   storeBoxParams: imageActions.storeBoxParams,

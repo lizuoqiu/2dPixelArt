@@ -1,7 +1,10 @@
 import { canvasLike, cloneCanvas, mergeBitmap } from "utils/canvasUtils";
 import { types } from "./constants";
+import { Plane } from "@react-three/drei";
 
 const initialState = {
+  canvasSize: { width: null, height: null },
+  pointerList: [],
   rgbImageUrl: null,
   depthImageUrl: null,
   selectionImageUrl: null,
@@ -80,6 +83,21 @@ const initialState = {
 
 export const imageReducer = (state = initialState, { type, payload }) => {
   switch (type) {
+    case types.CANVAS_SIZE_CHANGE:
+      return {
+        ...state,
+        canvasSize: payload
+      };
+    case types.POINTER_LIST_CHANGE:
+      return {
+        ...state,
+        pointerList: payload
+      };
+    case types.NORMAL_MAP_CHANGE:
+      return {
+        ...state,
+        mainDepthCanvas: payload
+      };
     case types.HANDLE_CHANGE:
       return {
         ...state,

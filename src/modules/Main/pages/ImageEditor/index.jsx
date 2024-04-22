@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import { imageActions } from "store/image";
@@ -11,7 +11,8 @@ import {
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
-  UncontrolledTooltip
+  UncontrolledTooltip,
+  Spinner
 } from "reactstrap";
 import { AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
 import { MdOutlinePanTool } from "react-icons/md";
@@ -29,6 +30,7 @@ import SampleDepth from "assets/images/depth/depth.png";
 let objectUrl = null;
 
 export function ImageEditor({
+  normal_map_change,
   selectionImageUrl,
   maskImageUrl,
   depthImageSize,
@@ -45,11 +47,46 @@ export function ImageEditor({
   reset,
   initImage,
   handleChange,
+  initDepth,
   updateLayer
 }) {
-  const onHandleChange = e => {
-    handleChange(e);
-    e.target.value = null;
+  const [isLoading, setIsLoading] = useState(false); // 用于控制加载动画的状态
+  const onHandleChange = async e => {
+    const file = e.target.files[0]; // Get the file from the event
+    if (!file) return; // Exit if no file is selected
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append("file", file); // Prepare the file for uploading
+    // e.target.name = "depthImageUrl";
+    console.error("upload");
+    try {
+      const response = await fetch("http://localhost:5000/upload", {
+        method: "POST",
+        body: formData
+      }); // Upload the file
+      if (response.ok) {
+        const data = await response.json(); // Process the response
+        // console.error(data["normal_map"]);
+        const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
+        const img = new Image();
+        img.onload = () => {
+          initDepth(img);
+        };
+        img.src = `data:image/jpeg;base64,${normal_map_base64String}`;
+        const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
+        const shading_image = new Image();
+        shading_image.onload = () => {
+          window.updateImageViewer(shading_image);
+        };
+        shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
+      } else {
+        console.error("Upload failed");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+    handleChange(e); // Handle the change event (first part)
+    setIsLoading(false);
   };
   const openAttachment = id => {
     document.getElementById(id).click();
@@ -60,7 +97,6 @@ export function ImageEditor({
       depthImageUrl: SampleDepth
     });
   };
-  useEffect(loadSample, []);
   useEffect(() => {
     if (selectionImageUrl) {
       let selectionImage = new Image();
@@ -97,6 +133,12 @@ export function ImageEditor({
       <Helmet>
         <title>CP Lab Depth Editing Application</title>
       </Helmet>
+      {isLoading && (
+        <div className="loading-overlay">
+          <Spinner color="primary" /> {/* 使用 Spinner 来显示加载动画 */}
+          <p>Loading...</p>
+        </div>
+      )}
       <header>
         <input
           id="upload-rgb-image"
@@ -302,6 +344,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  normal_map_change: imageActions.normal_map_change,
+  initDepth: imageActions.initDepth,
   handleChange: imageActions.handleChange,
   initImage: imageActions.initImage,
   updateLayer: imageActions.updateLayer,

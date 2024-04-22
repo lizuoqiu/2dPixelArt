@@ -1,53 +1,69 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { selectors as imageSelectors } from "store/image";
-import RangeSlider from "./rangeslider";
-import HistViewerStyle from "./style";
-import { getImageData } from "utils/drawHistogram";
+import React, { Component, createRef } from "react";
 
-class HistViewer extends Component {
+class CombinedInfoSender extends Component {
   constructor() {
     super();
+    this.canvasRef = createRef();
+    this.state = {
+      selectedDirection: null,
+      points: []
+    };
   }
-  state = {
-    windowWidth: window.innerWidth,
-    windowHeight: window.innerHeight,
-    data: []
+
+  componentDidMount() {
+    this.drawDirections();
+  }
+
+  drawDirections = () => {
+    const canvas = this.canvasRef.current;
+    const ctx = canvas.getContext("2d");
   };
-  componentDidUpdate(prevProps) {
-    let { memoryDepthCanvas, parameters } = this.props;
-    if (
-      prevProps.parameters.croppedCanvasImage !== parameters.croppedCanvasImage ||
-      prevProps.memoryDepthCanvas !== memoryDepthCanvas
-    ) {
-      if (memoryDepthCanvas) {
-        if (parameters.croppedCanvasImage) {
-          let histDepthData = getImageData(parameters.croppedCanvasImage);
-          this.setState({ data: histDepthData });
-        } else {
-          let histDepthData = getImageData(memoryDepthCanvas);
-          this.setState({ data: histDepthData });
-        }
+
+  selectDirection = e => {};
+
+  handlePointSelection = e => {
+    const newPoint = { x: e.clientX, y: e.clientY };
+    this.setState(prevState => ({
+      points: [...prevState.points, newPoint]
+    }));
+  };
+
+  sendDataToBackend = async () => {
+    const { selectedDirection, points } = this.state;
+    console.log(selectedDirection);
+    try {
+      const response = await fetch("/api/send-data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ direction: selectedDirection, points: points })
+      });
+      if (response.ok) {
+        console.log("Data sent successfully");
       } else {
-        this.setState({ data: [] });
+        console.log("Failed to send data");
       }
+    } catch (error) {
+      console.error("Failed to send data", error);
     }
-  }
+  };
+
   render() {
-    const { data } = this.state;
     return (
-      <HistViewerStyle>
-        <RangeSlider data={data} />
-      </HistViewerStyle>
+      <div>
+        <canvas ref={this.canvasRef} width="300" height="300" onClick={this.selectDirection} />
+        {this.state.selectedDirection && <p>SelectedDirection: {this.state.selectedDirection}</p>}
+        {this.state.points.length > 0 && (
+          <ul>
+            {this.state.points.map((point, index) => (
+              <li key={index}>{`${index + 1}: (${point.x}, ${point.y})`}</li>
+            ))}
+          </ul>
+        )}
+      </div>
     );
   }
 }
 
-const mapStateToProps = state => ({
-  memoryDepthCanvas: imageSelectors.memoryDepthCanvas(state),
-  parameters: imageSelectors.parameters(state)
-});
-
-const mapDispatchToProps = {};
-
-export default connect(mapStateToProps, mapDispatchToProps)(HistViewer);
+export default CombinedInfoSender;
