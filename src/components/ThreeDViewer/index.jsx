@@ -4,7 +4,7 @@ import LightSource from "../LightSource";
 function ImageViewer() {
   const [imageObject, setImageObject] = useState(null);
   const canvasRef = useRef(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  // const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [lightSources, setLightSources] = useState([
     {
       // Position relative to the top-right corner of the canvas
@@ -14,21 +14,21 @@ function ImageViewer() {
     }
   ]); // Initial position
   const [canvasBounds, setCanvasBounds] = useState({ left: 0, top: 0, width: 0, height: 0 });
+  const [canvasParent, setCanvasParent] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
   const sendLightSourceData = () => {
     // Extract position, height (based on canvas), and color for each light source
     const lightSourceData = lightSources.map(source => ({
       position: {
-        x: source.x * canvasSize.width, // Convert relative to absolute
-        y: source.y * canvasSize.height
+        x: source.x * canvasBounds.width, // Convert relative to absolute
+        y: source.y * canvasBounds.height
       },
-      canvasWidth: canvasSize.width,
-      canvasHeight: canvasSize.height,
-      height: canvasSize.height || 0,
+      canvasWidth: canvasBounds.width,
+      canvasHeight: canvasBounds.height,
+      height: canvasBounds.height || 0,
       color: hexToRGB(source.color)
     }));
-    console.log("light: ", lightSourceData);
-    console.log("canvas: ", canvasSize);
+
     fetch("http://localhost:5000/update_light", {
       method: "POST",
       headers: {
@@ -39,12 +39,9 @@ function ImageViewer() {
       .then(response => response.json())
       .then(data => {
         const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
-        console.log(shading_base64String);
         const shading_image = new Image();
         shading_image.onload = () => {
           window.updateImageViewer(shading_image);
-          console.log("Image loaded, updating viewer..."); // Debug: Ensure this log appears
-          // initDepth(shading_base64String);
         };
         shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
       })
@@ -59,31 +56,30 @@ function ImageViewer() {
       console.error("Canvas not available.");
       return;
     }
+    const parentDiv = canvas.parentElement;
+
+    const parentBounds = parentDiv.getBoundingClientRect();
+    const relativeX = canvasBounds.left - parentBounds.left;
+    const relativeY = canvasBounds.top - parentBounds.top;
 
     const { width, height, left, top } = canvas.getBoundingClientRect();
 
-    // Check for zero width/height to avoid division by zero
     if (width === 0 || height === 0) {
       console.error("Canvas size is zero, unable to update light source.");
       return;
     }
 
-    const adjustedX = newPosition.x; // Adjust by the canvas's left offset
-    const adjustedY = newPosition.y; // Adjust by the canvas's top offset
-
+    const adjustedX = newPosition.x - relativeX;
+    const adjustedY = newPosition.y - relativeY;
     const clampedX = Math.max(0, Math.min(adjustedX, width));
     const clampedY = Math.max(0, Math.min(adjustedY, height));
     const updatedLightSources = [...lightSources];
-    // Convert absolute position to relative position
+
     updatedLightSources[index] = {
       ...updatedLightSources[index],
-      x: clampedX / width,
-      y: clampedY / height
+      x: clampedX,
+      y: clampedY
     };
-    const { w, d } = canvasSize;
-    console.log({ clampedX, clampedY, w, d });
-    console.log(updatedLightSources);
-    console.log({ width, height });
     setLightSources(updatedLightSources);
   };
 
@@ -105,7 +101,6 @@ function ImageViewer() {
   const handleColorChange = (index, newColor) => {
     const updatedLightSources = [...lightSources];
     updatedLightSources[index].color = newColor;
-    console.log("aaaaaaaaaaaaaaaaaaaaaaaaa", newColor);
     setLightSources(updatedLightSources);
   };
 
@@ -119,15 +114,17 @@ function ImageViewer() {
     if (canvas) {
       const bounds = canvas.getBoundingClientRect(); // Get canvas bounds
       setCanvasBounds(bounds); // Set initial canvas bounds
+      const parentDiv = canvas.parentElement;
+
+      const parentBounds = parentDiv.getBoundingClientRect();
+      setCanvasParent(parentBounds);
     }
     const handleUpdateImage = event => {
       const image = event.detail.image;
-      console.log("Received image dimensions:", image.width, image.height);
       setImageObject(image);
       // Ensure we are targeting the correct canvas by adding a unique identifier if necessary
       if (canvasRef.current && image) {
         const canvas = canvasRef.current;
-        console.log("Canvas element:", canvas); // Check if the canvas element is correct
         const ctx = canvas.getContext("2d");
 
         const parentDiv = canvas.parentElement;
@@ -142,15 +139,16 @@ function ImageViewer() {
 
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
-        console.log("windows element:", window.innerWidth);
-        console.log("Canvas dimensions set to image size:", canvas.width, canvas.height);
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        setCanvasSize({ width: canvasWidth, height: canvasHeight }); // Update canvas size
+        // setCanvasSize({ width: canvasWidth, height: canvasHeight }); // Update canvas size
         if (canvas) {
           const bounds = canvas.getBoundingClientRect(); // Get canvas bounds
           setCanvasBounds(bounds); // Set initial canvas bounds
+          const parentDiv = canvas.parentElement;
+          const parentBounds = parentDiv.getBoundingClientRect();
+          setCanvasParent(parentBounds);
         }
         // Additional logging to check if the drawing happens
         console.log(`Image drawn on canvas: ${canvas.toDataURL().substring(0, 30)}...`);
@@ -159,17 +157,17 @@ function ImageViewer() {
       }
     };
     const handleResize = event => {
-      const image = imageObject; // 您需要在这里正确地引用图片对象
+      const image = imageObject;
       if (canvasRef.current && image) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
 
         const parentDiv = canvas.parentElement;
-        const rect = parentDiv.getBoundingClientRect(); // 这里获取宽高
+        const rect = parentDiv.getBoundingClientRect();
 
         const scaleWidth = (rect.width * 0.9) / imageObject.width;
         const scaleHeight = (rect.height * 0.9) / imageObject.height;
-        const scale = Math.min(scaleWidth, scaleHeight, 1); // 确保不放大超过原始尺寸
+        const scale = Math.min(scaleWidth, scaleHeight, 1);
 
         const canvasWidth = imageObject.width * scale;
         const canvasHeight = imageObject.height * scale;
@@ -179,11 +177,13 @@ function ImageViewer() {
         if (canvas) {
           const bounds = canvas.getBoundingClientRect(); // Get canvas bounds
           setCanvasBounds(bounds); // Set initial canvas bounds
+          const parentDiv = canvas.parentElement;
+          const parentBounds = parentDiv.getBoundingClientRect();
+          setCanvasParent(parentBounds);
         }
-        // 清除画布并绘制新尺寸的图片
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        setCanvasSize({ canvasWidth, canvasHeight });
+        // setCanvasSize({ canvasWidth, canvasHeight });
       }
     };
 
@@ -230,7 +230,7 @@ function ImageViewer() {
           onPositionChange={newPosition => handleLightSourceChange(index, newPosition)}
           onDelete={() => handleDeleteLightSource(index)}
           onColorChange={newColor => handleColorChange(index, newColor)}
-          canvasBounds={canvasBounds}
+          canvasParent={canvasParent}
         />
       ))}
       <canvas ref={canvasRef} />

@@ -112,7 +112,6 @@ class RgbViewer extends Component {
         if (Math.max(rgbImage.height, rgbImage.width) > 1000) {
           rgbImage = canvasResize(rgbImage);
         }
-        console.log("current canvas size is", rgbImage.width, rgbImage.height);
         initRgb(cloneCanvas(rgbImage));
         // if (this.state.polygonPoints) {
         //   this.redrawCanvas();
@@ -247,7 +246,6 @@ class RgbViewer extends Component {
     if (prevProps.rgbImageUrl !== rgbImageUrl) {
       rgbContext.clearRect(0, 0, rgbCanvas.width, rgbCanvas.height);
       let rgbImage = new Image();
-      console.log("Received image dimensions:", rgbImage.width, rgbImage.height);
       if (typeof rgbImageUrl === "object") {
         objectUrl = getImageUrl(rgbImageUrl);
         rgbImage.src = objectUrl;
@@ -378,7 +376,6 @@ class RgbViewer extends Component {
     );
   };
   drawPolygon = () => {
-    console.log("drawPolygon");
     const { polygonPoints } = this.state;
     const ctx = this.rgbImageRef.current.getContext("2d");
     ctx.beginPath();
@@ -537,7 +534,6 @@ class RgbViewer extends Component {
     const rgbCanvas = this.rgbImageRef.current;
     ctx.clearRect(0, 0, rgbCanvas.width, rgbCanvas.height);
     const { ratio, centerShift_x, centerShift_y } = getRatio(mainRgbCanvas, rgbCanvas);
-    console.log(ratio);
     ctx.drawImage(
       mainRgbCanvas,
       centerShift_x,
@@ -551,7 +547,6 @@ class RgbViewer extends Component {
   sendDataToBackend = async () => {
     const { polygonPoints } = this.state;
     try {
-      console.log(polygonPoints);
       const rgbCanvas = this.rgbImageRef.current;
       const response = await fetch("http://localhost:5000/update_normal_map", {
         method: "POST",
@@ -561,7 +556,6 @@ class RgbViewer extends Component {
         body: JSON.stringify({ points: polygonPoints, canvasWidth: rgbCanvas.width, canvasHeight: rgbCanvas.height })
       });
       const data = await response.json();
-      console.log("Data received from backend", data);
     } catch (error) {
       console.error("Error sending data to backend", error);
     }

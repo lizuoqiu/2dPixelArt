@@ -58,31 +58,25 @@ export function ImageEditor({
     const formData = new FormData();
     formData.append("file", file); // Prepare the file for uploading
     // e.target.name = "depthImageUrl";
-    console.log(e.target.name);
     console.error("upload");
     try {
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData
       }); // Upload the file
-      console.log(response);
       if (response.ok) {
         const data = await response.json(); // Process the response
         // console.error(data["normal_map"]);
-        console.log(data);
         const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
-        // console.log(normal_map_base64String);
         const img = new Image();
         img.onload = () => {
           initDepth(img);
         };
         img.src = `data:image/jpeg;base64,${normal_map_base64String}`;
         const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
-        console.log(shading_base64String);
         const shading_image = new Image();
         shading_image.onload = () => {
           window.updateImageViewer(shading_image);
-          console.log("Image loaded, updating viewer..."); // Debug: Ensure this log appears
         };
         shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
       } else {
@@ -184,7 +178,6 @@ export function ImageEditor({
                     <DropdownItem
                       onClick={() => {
                         openAttachment("upload-rgb-image");
-                        console.log(selectionImageUrl);
                       }}
                     >
                       <label htmlFor="upload-rgb-image">Open RGB Image</label>
@@ -363,30 +356,5 @@ const mapDispatchToProps = {
   clear: imageActions.clear,
   reset: imageActions.reset
 };
-const submitting = async e => {
-  const file = e.target.files[0]; // Get the selected file
-  if (!file) {
-    return;
-  }
 
-  const formData = new FormData();
-  formData.append("file", file); // Match the name ('file') with your Python backend's expectation
-
-  try {
-    const response = await fetch("http://localhost:3000/upload", {
-      method: "POST",
-      body: formData
-    });
-
-    if (response.ok) {
-      //console.log("Upload·successful");
-      const data = await response.json();
-      // Do something with the response data
-    } else {
-      console.error("Upload·failed");
-    }
-  } catch (error) {
-    console.error("Error:", error);
-  }
-};
 export default connect(mapStateToProps, mapDispatchToProps)(ImageEditor);

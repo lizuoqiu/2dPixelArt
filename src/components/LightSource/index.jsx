@@ -8,8 +8,8 @@ function LightSource({
   initialColor = "white",
   onPositionChange,
   onDelete,
-  onColorChange,
-  canvasBounds
+  canvasParent,
+  onColorChange
 }) {
   const [position, setPosition] = useState(initialPosition);
   const [color, setColor] = useState(initialColor);
@@ -18,17 +18,9 @@ function LightSource({
   const handleDragEnd = event => {
     const newX = event.clientX;
     const newY = event.clientY;
-    // Adjust by the canvas's top-left offset
-    const adjustedX = newX - canvasBounds.left;
-    const adjustedY = newY - canvasBounds.top;
-
-    // Clamp within the canvas's bounds
-    const clampedX = Math.max(0, Math.min(adjustedX, canvasBounds.width));
-    const clampedY = Math.max(0, Math.min(adjustedY, canvasBounds.height));
-
-    const newPosition = { x: clampedX, y: clampedY };
-    console.log("new posisiton: ", newPosition);
-    console.log("new canvasBounds: ", canvasBounds);
+    const adjustedX = newX - canvasParent.left;
+    const adjustedY = newY - canvasParent.top;
+    const newPosition = { x: adjustedX, y: adjustedY };
     onPositionChange(newPosition);
     setPosition(newPosition);
   };
