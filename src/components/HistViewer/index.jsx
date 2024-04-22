@@ -6,7 +6,7 @@ class CombinedInfoSender extends Component {
     this.canvasRef = createRef();
     this.state = {
       selectedDirection: null,
-      points: [] // 假设这是你要发送的点的坐标数组
+      points: []
     };
   }
 
@@ -17,15 +17,15 @@ class CombinedInfoSender extends Component {
   drawDirections = () => {
     const canvas = this.canvasRef.current;
     const ctx = canvas.getContext("2d");
-    // 绘制逻辑
+    // Drawing logic
   };
 
   selectDirection = e => {
-    // 方向选择逻辑
+    // Direction selection logic
   };
 
   handlePointSelection = e => {
-    // 点选逻辑，例如添加一个点到状态中
+    // Click logic, such as adding a point to a state
     const newPoint = { x: e.clientX, y: e.clientY }; // 示例点数据
     this.setState(prevState => ({
       points: [...prevState.points, newPoint]
@@ -57,7 +57,6 @@ class CombinedInfoSender extends Component {
     return (
       <div>
         <canvas ref={this.canvasRef} width="300" height="300" onClick={this.selectDirection} />
-        <button onClick={this.sendDataToBackend}>Update</button>
         {this.state.selectedDirection && <p>SelectedDirection: {this.state.selectedDirection}</p>}
         {this.state.points.length > 0 && (
           <ul>

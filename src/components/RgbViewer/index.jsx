@@ -32,9 +32,9 @@ class RgbViewer extends Component {
   state = {
     windowWidth: window.innerWidth,
     windowHeight: window.innerHeight,
-    polygonPoints: [], // 用于存储多边形的顶点
-    isDrawingMode: false, // 初始时不处于画笔模式
-    originalImageSize: { width: 0, height: 0 } // 存储图片的原始尺寸
+    polygonPoints: [], // Used to store the vertices of the polygon
+    isDrawingMode: false, // Not in brush mode initially
+    originalImageSize: { width: 0, height: 0 } // Store the original size of the picture
   };
   toggleDrawingMode = () => {
     this.setState(prevState => ({
@@ -46,8 +46,8 @@ class RgbViewer extends Component {
     window.addEventListener("resize", this.handleResize);
     // 添加绘图事件监听器
     const canvas = this.rgbImageRef.current;
-    canvas.addEventListener("click", this.addPolygonPoint); // 处理点击事件以添加多边形的点
-    canvas.addEventListener("dblclick", this.closePolygon); // 双击来闭合多边形
+    canvas.addEventListener("click", this.addPolygonPoint); // Handles click events to add polygon points
+    canvas.addEventListener("dblclick", this.closePolygon); // Double click to close the polygon
     let width = canvas.width;
     let height = canvas.height;
     this.props.canvas_size_update({ width, height });
@@ -115,7 +115,7 @@ class RgbViewer extends Component {
         console.log("current canvas size is", rgbImage.width, rgbImage.height);
         initRgb(cloneCanvas(rgbImage));
         // if (this.state.polygonPoints) {
-        //   this.redrawCanvas(); // 确保在图片加载后重新绘制
+        //   this.redrawCanvas();
         // }
       };
     }
@@ -331,7 +331,7 @@ class RgbViewer extends Component {
     }
   };
   handleMouseMove = event => {
-    if (!this.state.isDrawingMode || event.buttons !== 1) return; // 如果不是画笔模式或鼠标左键未按下，不做处理
+    if (!this.state.isDrawingMode || event.buttons !== 1) return;
     let { memoryRgbCanvas, boxParams, storeBoxParams } = this.props;
     if (event.buttons !== 1 || !boxParams.start) return;
     if (memoryRgbCanvas) {
@@ -368,13 +368,11 @@ class RgbViewer extends Component {
     const { offsetX, offsetY } = e;
     const newPoint = { x: offsetX, y: offsetY };
     const { polygonPoints } = this.state;
-    // 添加新点到状态中
     this.setState(
       {
         polygonPoints: [...polygonPoints, newPoint]
       },
       () => {
-        // 每次添加点后重绘
         this.drawPolygon();
       }
     );
@@ -391,17 +389,17 @@ class RgbViewer extends Component {
         ctx.lineTo(point.x, point.y);
       }
     });
-    ctx.stroke(); // 绘制当前的多边形
+    ctx.stroke();
   };
   closePolygon = () => {
     const { polygonPoints } = this.state;
     if (polygonPoints.length > 2) {
       this.setState(
         {
-          polygonPoints: [...polygonPoints, polygonPoints[0]] // 将第一个点添加到最后来闭合多边形
+          polygonPoints: [...polygonPoints, polygonPoints[0]]
         },
         () => {
-          this.drawPolygon(); // 重新绘制多边形
+          this.drawPolygon();
         }
       );
     }
@@ -409,6 +407,18 @@ class RgbViewer extends Component {
   render() {
     const { rgbImageRef } = this;
     const { rgbScaleParams, depthScaleParams, isPanActive, activeDepthTool, storeScaleParams } = this.props;
+    const buttonStyle = {
+      backgroundColor: "#4CAF50", // Green background
+      color: "white",
+      padding: "15px 32px",
+      textAlign: "center",
+      textDecoration: "none",
+      display: "inline-block",
+      fontSize: "16px",
+      margin: "4px 2px",
+      cursor: "pointer",
+      borderRadius: "8px" // Rounded corners
+    };
     return (
       <RgbViewerStyle>
         <canvas
@@ -493,8 +503,14 @@ class RgbViewer extends Component {
             }
           }}
         ></canvas>
-        <button onClick={this.undoLastPoint}>Undo</button>
-        <button onClick={this.clearPoints}>Clear</button>
+        <div style={{ textAlign: "center" }}>
+          <button style={buttonStyle} onClick={this.undoLastPoint}>
+            Undo
+          </button>
+          <button style={buttonStyle} onClick={this.clearPoints}>
+            Clear
+          </button>
+        </div>
       </RgbViewerStyle>
     );
   }

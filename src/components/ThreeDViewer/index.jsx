@@ -196,6 +196,18 @@ function ImageViewer() {
     };
   }, [imageObject]);
 
+  const buttonStyle = {
+    backgroundColor: "#4CAF50", // Green background
+    color: "white",
+    padding: "15px 32px",
+    textAlign: "center",
+    textDecoration: "none",
+    display: "inline-block",
+    fontSize: "16px",
+    margin: "4px 2px",
+    cursor: "pointer",
+    borderRadius: "8px" // Rounded corners
+  };
   return (
     <div
       style={{
@@ -225,6 +237,7 @@ function ImageViewer() {
       <button
         onClick={handleAddLightSource}
         style={{
+          ...buttonStyle,
           position: "absolute",
           bottom: "10px",
           left: "50%",
