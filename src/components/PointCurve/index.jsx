@@ -8,7 +8,7 @@ class DirectionSelector extends Component {
     this.directionRef = createRef();
   }
   state = {
-    selectedDirection: null, // Stores the currently selected direction
+    selectedDirection: null,
     polygonPoints: []
   };
 
@@ -17,16 +17,14 @@ class DirectionSelector extends Component {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.font = "50px Arial";
-    // Main Directions
-    ctx.fillText("↑", canvas.width / 2 - 15, 50); // Up
-    ctx.fillText("↓", canvas.width / 2 - 15, canvas.height - 20); // Down
-    ctx.fillText("←", 30, canvas.height / 2 + 15); // Left
-    ctx.fillText("→", canvas.width - 80, canvas.height / 2 + 15); // Right
-    // Diagonal Directions
-    ctx.fillText("↖", 30, 70); // Top-left
-    ctx.fillText("↗", canvas.width - 80, 70); // Top-right
-    ctx.fillText("↙", 30, canvas.height - 20); // Bottom-left
-    ctx.fillText("↘", canvas.width - 80, canvas.height - 20); // Bottom-right
+    ctx.fillText("↑", canvas.width / 2 - 15, 50);
+    ctx.fillText("↓", canvas.width / 2 - 15, canvas.height - 20);
+    ctx.fillText("←", 30, canvas.height / 2 + 15);
+    ctx.fillText("→", canvas.width - 80, canvas.height / 2 + 15);
+    ctx.fillText("↖", 30, 70);
+    ctx.fillText("↗", canvas.width - 80, 70);
+    ctx.fillText("↙", 30, canvas.height - 20);
+    ctx.fillText("↘", canvas.width - 80, canvas.height - 20);
   };
 
   componentDidMount() {
@@ -39,9 +37,8 @@ class DirectionSelector extends Component {
     const y = e.clientY - rect.top;
     const width = this.directionRef.current.width;
     const height = this.directionRef.current.height;
-    const position = { x, y }; // Create an object to store the click position
+    const position = { x, y };
 
-    // Using some margins for simplicity in direction detection
     const margin = width * 0.3;
 
     if (x < margin && y < margin) {
@@ -66,7 +63,7 @@ class DirectionSelector extends Component {
   sendDataToBackend = () => {
     const { initDepth } = this.props;
     const { selectedDirection, polygonPoints } = this.state;
-    const { pointerList, canvasSize } = this.props; // Access pointerList from props
+    const { pointerList, canvasSize } = this.props;
     if (!selectedDirection) {
       alert("choose a direction");
       return;
@@ -84,13 +81,13 @@ class DirectionSelector extends Component {
     })
       .then(response => response.json())
       .then(data => {
-        const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
+        const normal_map_base64String = data["normal_map"];
         const img = new Image();
         img.onload = () => {
           initDepth(img);
         };
         img.src = `data:image/jpeg;base64,${normal_map_base64String}`;
-        const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
+        const shading_base64String = data["shading_image"];
         const shading_image = new Image();
         shading_image.onload = () => {
           window.updateImageViewer(shading_image);
@@ -104,7 +101,7 @@ class DirectionSelector extends Component {
 
   render() {
     const buttonStyle = {
-      backgroundColor: "#4CAF50", // Green background
+      backgroundColor: "#4CAF50",
       color: "white",
       padding: "15px 32px",
       textAlign: "center",
@@ -113,7 +110,7 @@ class DirectionSelector extends Component {
       fontSize: "16px",
       margin: "4px 2px",
       cursor: "pointer",
-      borderRadius: "8px" // Rounded corners
+      borderRadius: "8px"
     };
 
     return (
@@ -132,7 +129,7 @@ class DirectionSelector extends Component {
   }
 }
 const mapStateToProps = state => ({
-  pointerList: imageSelectors.pointerList(state), // Assuming the existence of this selector
+  pointerList: imageSelectors.pointerList(state),
   canvasSize: imageSelectors.canvasSize(state)
 });
 
