@@ -26,10 +26,7 @@ class MainPane extends Component {
             </div>
             <div className="main-column main-column-3d">
               <div className="box threeD-box">
-                <ThreeDViewer
-                  rgbImageCanvas={canvasToImage(memoryRgbCanvas)}
-                  depthImageCanvas={canvasToImage(memoryDepthCanvas)}
-                />
+                <ThreeDViewer />
               </div>
               <div className="box histogram-box">
                 <HistViewer />

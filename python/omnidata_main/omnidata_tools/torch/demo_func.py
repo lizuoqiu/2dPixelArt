@@ -59,7 +59,6 @@ def get_normal_map(task, img):
     img = Image.new('RGBA', (padded_size, padded_size), fill_color)
     img.paste(raw_input, (int((padded_size - x) / 2), int((padded_size - y) / 2)))
     img = img.resize((384, 384))
-    img.show()
 
     # get target task and model
     if task == 'normal':

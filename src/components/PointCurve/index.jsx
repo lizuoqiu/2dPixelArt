@@ -1,4 +1,6 @@
 import React, { Component, createRef } from "react";
+import { connect } from "react-redux";
+import { imageActions, selectors as imageSelectors } from "../../store/image";
 
 class DirectionSelector extends Component {
   constructor() {
@@ -40,7 +42,7 @@ class DirectionSelector extends Component {
     const position = { x, y }; // Create an object to store the click position
 
     // Using some margins for simplicity in direction detection
-    const margin = width * 0.1;
+    const margin = width * 0.3;
 
     if (x < margin && y < margin) {
       this.setState({ selectedDirection: "TOP-LEFT" });
@@ -62,28 +64,38 @@ class DirectionSelector extends Component {
   };
 
   sendDataToBackend = () => {
+    const { initDepth } = this.props;
     const { selectedDirection, polygonPoints } = this.state;
-    const canvas = this.directionRef.current; // 获取正确的canvas引用
-    console.log(selectedDirection, polygonPoints);
+    const { pointerList, canvasSize } = this.props; // Access pointerList from props
     if (!selectedDirection) {
       alert("choose a direction");
       return;
     }
-    fetch("YOUR_BACKEND_URL", {
+    fetch("http://localhost:5000/update_normal_map", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         direction: selectedDirection,
-        points: polygonPoints,
-        canvasWidth: canvas.width, // 使用canvas.width
-        canvasHeight: canvas.height // 使用canvas.height
+        pointerList: pointerList,
+        canvasSize: canvasSize
       })
     })
       .then(response => response.json())
       .then(data => {
-        console.log("successed:", data);
+        const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
+        const img = new Image();
+        img.onload = () => {
+          initDepth(img);
+        };
+        img.src = `data:image/jpeg;base64,${normal_map_base64String}`;
+        const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
+        const shading_image = new Image();
+        shading_image.onload = () => {
+          window.updateImageViewer(shading_image);
+        };
+        shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
       })
       .catch(error => {
         console.error("failed:", error);
@@ -91,18 +103,41 @@ class DirectionSelector extends Component {
   };
 
   render() {
+    const buttonStyle = {
+      backgroundColor: "#4CAF50", // Green background
+      color: "white",
+      padding: "15px 32px",
+      textAlign: "center",
+      textDecoration: "none",
+      display: "inline-block",
+      fontSize: "16px",
+      margin: "4px 2px",
+      cursor: "pointer",
+      borderRadius: "8px" // Rounded corners
+    };
+
     return (
       <div>
         <canvas ref={this.directionRef} width="250" height="250" onClick={this.selectDirection} />
         {this.state.selectedDirection && (
           <div>
-            <p>Selected Direction: {this.state.selectedDirection}</p>
-            <button onClick={this.sendDataToBackend}>Send Direction</button>
+            <p style={{ color: "white" }}>Selected Direction: {this.state.selectedDirection}</p>
+            <button style={buttonStyle} onClick={this.sendDataToBackend}>
+              Update Normal Map :)
+            </button>
           </div>
         )}
       </div>
     );
   }
 }
+const mapStateToProps = state => ({
+  pointerList: imageSelectors.pointerList(state), // Assuming the existence of this selector
+  canvasSize: imageSelectors.canvasSize(state)
+});
 
-export default DirectionSelector;
+const mapDispatchToProps = {
+  initDepth: imageActions.initDepth
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(DirectionSelector);

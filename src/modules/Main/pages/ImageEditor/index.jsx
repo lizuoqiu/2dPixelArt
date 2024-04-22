@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import { imageActions } from "store/image";
@@ -11,7 +11,8 @@ import {
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
-  UncontrolledTooltip
+  UncontrolledTooltip,
+  Spinner
 } from "reactstrap";
 import { AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
 import { MdOutlinePanTool } from "react-icons/md";
@@ -49,22 +50,23 @@ export function ImageEditor({
   initDepth,
   updateLayer
 }) {
+  const [isLoading, setIsLoading] = useState(false); // 用于控制加载动画的状态
   const onHandleChange = async e => {
     const file = e.target.files[0]; // Get the file from the event
     if (!file) return; // Exit if no file is selected
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("file", file); // Prepare the file for uploading
     // e.target.name = "depthImageUrl";
-    console.log(e.target.name);
     console.error("upload");
     try {
-      const response = await fetch("http://127.0.0.1:5000/upload", {
+      const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData
       }); // Upload the file
       if (response.ok) {
         const data = await response.json(); // Process the response
-        console.error(data["normal_map"]);
+        // console.error(data["normal_map"]);
         const normal_map_base64String = data["normal_map"]; // replace with your actual base64 string key
         const img = new Image();
         img.onload = () => {
@@ -74,8 +76,7 @@ export function ImageEditor({
         const shading_base64String = data["shading_image"]; // replace with your actual base64 string key
         const shading_image = new Image();
         shading_image.onload = () => {
-          // TODO: Replace by the image update function from 3d viewer
-          // initDepth(shading_base64String);
+          window.updateImageViewer(shading_image);
         };
         shading_image.src = `data:image/jpeg;base64,${shading_base64String}`;
       } else {
@@ -85,6 +86,7 @@ export function ImageEditor({
       console.error("Error:", error);
     }
     handleChange(e); // Handle the change event (first part)
+    setIsLoading(false);
   };
   const openAttachment = id => {
     document.getElementById(id).click();
@@ -95,7 +97,6 @@ export function ImageEditor({
       depthImageUrl: SampleDepth
     });
   };
-  useEffect(loadSample, []);
   useEffect(() => {
     if (selectionImageUrl) {
       let selectionImage = new Image();
@@ -132,6 +133,12 @@ export function ImageEditor({
       <Helmet>
         <title>CP Lab Depth Editing Application</title>
       </Helmet>
+      {isLoading && (
+        <div className="loading-overlay">
+          <Spinner color="primary" /> {/* 使用 Spinner 来显示加载动画 */}
+          <p>Loading...</p>
+        </div>
+      )}
       <header>
         <input
           id="upload-rgb-image"
@@ -171,7 +178,6 @@ export function ImageEditor({
                     <DropdownItem
                       onClick={() => {
                         openAttachment("upload-rgb-image");
-                        console.log(selectionImageUrl);
                       }}
                     >
                       <label htmlFor="upload-rgb-image">Open RGB Image</label>
@@ -350,30 +356,5 @@ const mapDispatchToProps = {
   clear: imageActions.clear,
   reset: imageActions.reset
 };
-const submitting = async e => {
-  const file = e.target.files[0]; // Get the selected file
-  if (!file) {
-    return;
-  }
 
-  const formData = new FormData();
-  formData.append("file", file); // Match the name ('file') with your Python backend's expectation
-
-  try {
-    const response = await fetch("http://localhost:3000/upload", {
-      method: "POST",
-      body: formData
-    });
-
-    if (response.ok) {
-      //console.log("Upload·successful");
-      const data = await response.json();
-      // Do something with the response data
-    } else {
-      console.error("Upload·failed");
-    }
-  } catch (error) {
-    console.error("Error:", error);
-  }
-};
 export default connect(mapStateToProps, mapDispatchToProps)(ImageEditor);

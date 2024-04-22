@@ -255,7 +255,7 @@ export function SidePane({
       <>
         <div className="tool-ext w-100">
           <div className="w-100 mt-3 tool-ext-selection">
-            <p className="mb-1">Select</p>
+            <p className="mb-1">Selection Tools</p>
             <div disabled={operationStack.activeIndex <= 0} className="mt-4 tool-ext-selection-icons">
               {Object.keys(SelectionBox).map((key, index) => (
                 <div
@@ -300,80 +300,7 @@ export function SidePane({
             ) : null}
           </div>
           <div className="w-100 mt-4 tool-ext-section">
-            <p className="mb-1">Local Adjustment</p>
-            <Card className="tool-ext-card">
-              <CardBody className="tool-ext-card-body">
-                <FormGroup className="w-100">
-                  <Label for="disparity">Depth Intensity</Label>
-                  <div className="tool-ext-input d-flex justify-content-between w-100">
-                    <Input
-                      disabled={!memoryDepthCanvas || !parameters.histogramParams.pixelRange}
-                      onChange={onHandleChange}
-                      onMouseUp={onHandleUpdate}
-                      className="tool-ext-input-slider"
-                      id="disparity"
-                      name="disparity"
-                      min="-1"
-                      max="1"
-                      step={0.01}
-                      type="range"
-                      value={tempToolsParams.disparity}
-                    />
-                    <Input
-                      disabled={!memoryDepthCanvas || !parameters.histogramParams.pixelRange}
-                      onChange={onHandleChange}
-                      onMouseLeave={onHandleUpdate}
-                      onKeyDown={onHandleEnter}
-                      bsSize="sm"
-                      className="tool-ext-input-number"
-                      id="disparity"
-                      name="disparity"
-                      type="number"
-                      min="-1"
-                      max="1"
-                      step={0.01}
-                      value={tempToolsParams.disparity}
-                    />
-                  </div>
-                </FormGroup>
-                <FormGroup className="w-100">
-                  <Label for="scale">Depth Detail</Label>
-                  <div className="tool-ext-input d-flex justify-content-between w-100">
-                    <Input
-                      disabled={!memoryDepthCanvas || !parameters.histogramParams.pixelRange}
-                      onChange={onHandleChange}
-                      onMouseUp={onHandleUpdate}
-                      className="tool-ext-input-slider"
-                      id="scale"
-                      name="scale"
-                      min="0"
-                      max="1"
-                      step={0.01}
-                      type="range"
-                      value={tempToolsParams.scale}
-                    />
-                    <Input
-                      disabled={!memoryDepthCanvas || !parameters.histogramParams.pixelRange}
-                      onChange={onHandleChange}
-                      onMouseLeave={onHandleUpdate}
-                      onKeyDown={onHandleEnter}
-                      bsSize="sm"
-                      className="tool-ext-input-number"
-                      id="scale"
-                      name="scale"
-                      type="number"
-                      min="0"
-                      max="1"
-                      step={0.01}
-                      value={tempToolsParams.scale}
-                    />
-                  </div>
-                </FormGroup>
-              </CardBody>
-            </Card>
-          </div>
-          <div className="w-100 mt-4 tool-ext-section">
-            <p className="mb-1">Global Adjustment</p>
+            <p className="mb-1">Normal Map Selection</p>
             <Card className="tool-ext-card">
               <CardBody className="tool-ext-card-body">
                 <PointCurve
@@ -381,72 +308,6 @@ export function SidePane({
                     disabled: !memoryDepthCanvas || !parameters.histogramParams.pixelRange
                   }}
                 />
-                <FormGroup className="w-100">
-                  <Label for="aConstant">A</Label>
-                  <div className="tool-ext-input d-flex justify-content-between w-100">
-                    <Input
-                      disabled={!memoryDepthCanvas || !parameters.histogramParams.pixelRange}
-                      onChange={onHandleChange}
-                      onMouseUp={onHandleUpdate}
-                      className="tool-ext-input-slider"
-                      id="aConstant"
-                      name="aConstant"
-                      min="0"
-                      max="2"
-                      step={0.01}
-                      type="range"
-                      value={tempToolsParams.aConstant}
-                    />
-                    <Input
-                      disabled={!memoryDepthCanvas || !parameters.histogramParams.pixelRange}
-                      onChange={onHandleChange}
-                      onMouseLeave={onHandleUpdate}
-                      onKeyDown={onHandleEnter}
-                      bsSize="sm"
-                      className="tool-ext-input-number"
-                      id="aConstant"
-                      name="aConstant"
-                      type="number"
-                      min="0"
-                      max="2"
-                      step={0.01}
-                      value={tempToolsParams.aConstant}
-                    />
-                  </div>
-                </FormGroup>
-                <FormGroup className="w-100">
-                  <Label for="bConstant">B</Label>
-                  <div className="tool-ext-input d-flex justify-content-between w-100">
-                    <Input
-                      disabled={!memoryDepthCanvas || !parameters.histogramParams.pixelRange}
-                      onChange={onHandleChange}
-                      onMouseUp={onHandleUpdate}
-                      className="tool-ext-input-slider"
-                      id="bConstant"
-                      name="bConstant"
-                      min="0"
-                      max="2"
-                      step={0.01}
-                      type="range"
-                      value={tempToolsParams.bConstant}
-                    />
-                    <Input
-                      disabled={!memoryDepthCanvas || !parameters.histogramParams.pixelRange}
-                      onChange={onHandleChange}
-                      onMouseLeave={onHandleUpdate}
-                      onKeyDown={onHandleEnter}
-                      bsSize="sm"
-                      className="tool-ext-input-number"
-                      id="bConstant"
-                      name="bConstant"
-                      type="number"
-                      min="0"
-                      max="2"
-                      step={0.01}
-                      value={tempToolsParams.bConstant}
-                    />
-                  </div>
-                </FormGroup>
               </CardBody>
             </Card>
           </div>
@@ -459,7 +320,7 @@ export function SidePane({
       <div className="layer-mode-pane">
         <div className="layer-mode-header">
           <div className="layer-mode-header-title">
-            <p>Selection Pane</p>
+            <p>Normal Map Selection Pane</p>
           </div>
         </div>
         <div className="layer-mode-body">
@@ -472,52 +333,6 @@ export function SidePane({
             <Card className="layer-mode-body-add-card" onClick={addLayer}>
               <AiOutlinePlus />
             </Card>
-          </div>
-        </div>
-        <div disabled={mainDepthCanvas === null || operationStack.layerStack.length <= 1} className="layer-mode-footer">
-          <div className="layer-mode-footer-row text-center">
-            <div className="layer-mode-apply-button mx-2">
-              <Button className="custom-primary-button" size="sm" onClick={toggleLayerSelect}>
-                {operationStack.isSelectActive ? `Cancel (${operationStack.selectedLayers.size})` : "Select"}
-              </Button>
-            </div>
-            <div className="layer-mode-apply-button mx-2">
-              <Button className="custom-secondary-button" size="sm" onClick={removeAllLayers}>
-                Remove all
-              </Button>
-            </div>
-          </div>
-          <div className="layer-mode-footer-row text-center">
-            <div className="layer-mode-apply-button mx-2">
-              <Button
-                className="custom-primary-button"
-                size="sm"
-                disabled={
-                  memoryDepthCanvas === null || !operationStack.isSelectActive || operationStack.selectedLayers.size < 2
-                }
-                onClick={() => {
-                  mergeLayerSelect();
-                }}
-              >
-                Merge
-              </Button>
-            </div>
-            <div className="layer-mode-apply-button mx-2">
-              <Button
-                className="custom-secondary-button"
-                size="sm"
-                disabled={
-                  memoryDepthCanvas === null ||
-                  !operationStack.isSelectActive ||
-                  operationStack.selectedLayers.size === 0
-                }
-                onClick={() => {
-                  removeLayerSelect();
-                }}
-              >
-                Delete
-              </Button>
-            </div>
           </div>
         </div>
       </div>

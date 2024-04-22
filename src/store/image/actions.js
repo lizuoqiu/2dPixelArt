@@ -1,6 +1,8 @@
 import { types } from "./constants";
 
 export const imageActions = {
+  canvas_size_update: payload => ({ type: types.CANVAS_SIZE_CHANGE, payload: payload }),
+  point_list_update: payload => ({ type: types.POINTER_LIST_CHANGE, payload: payload }),
   normal_map_change: payload => ({ type: types.NORMAL_MAP_CHANGE, payload: payload }),
   handleChange: e => ({ type: types.HANDLE_CHANGE, payload: e.target }),
   initImage: payload => ({ type: types.INIT_IMAGE, payload: payload }),

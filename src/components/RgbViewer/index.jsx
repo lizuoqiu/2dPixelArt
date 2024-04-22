@@ -20,6 +20,7 @@ import {
   highlightPixelAreaRgb
 } from "utils/canvasUtils";
 import { runRgbOperations } from "utils/stackOperations";
+// import { addEffect } from "@react-three/fiber";
 
 let objectUrl = null;
 
@@ -31,9 +32,9 @@ class RgbViewer extends Component {
   state = {
     windowWidth: window.innerWidth,
     windowHeight: window.innerHeight,
-    polygonPoints: [], // 用于存储多边形的顶点
-    isDrawingMode: false, // 初始时不处于画笔模式
-    originalImageSize: { width: 0, height: 0 } // 存储图片的原始尺寸
+    polygonPoints: [], // Used to store the vertices of the polygon
+    isDrawingMode: false, // Not in brush mode initially
+    originalImageSize: { width: 0, height: 0 } // Store the original size of the picture
   };
   toggleDrawingMode = () => {
     this.setState(prevState => ({
@@ -45,8 +46,11 @@ class RgbViewer extends Component {
     window.addEventListener("resize", this.handleResize);
     // 添加绘图事件监听器
     const canvas = this.rgbImageRef.current;
-    canvas.addEventListener("click", this.addPolygonPoint); // 处理点击事件以添加多边形的点
-    canvas.addEventListener("dblclick", this.closePolygon); // 双击来闭合多边形
+    canvas.addEventListener("click", this.addPolygonPoint); // Handles click events to add polygon points
+    canvas.addEventListener("dblclick", this.closePolygon); // Double click to close the polygon
+    let width = canvas.width;
+    let height = canvas.height;
+    this.props.canvas_size_update({ width, height });
   }
   componentWillUnmount() {
     window.removeEventListener("resize", this.handleResize);
@@ -54,9 +58,11 @@ class RgbViewer extends Component {
     canvas.removeEventListener("click", this.addPolygonPoint);
     canvas.removeEventListener("dblclick", this.closePolygon);
   }
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     let { rgbImageRef } = this;
     let {
+      canvasSize,
+      pointerList,
       rgbImageUrl,
       mainRgbCanvas,
       memoryRgbCanvas,
@@ -75,8 +81,21 @@ class RgbViewer extends Component {
       addEffect
     } = this.props;
     let rgbCanvas = rgbImageRef.current;
+    // let width = rgbCanvas.width;
+    // let height = rgbCanvas.height;
+    // this.props.canvas_size_update({ width, height });
     let rgbContext = rgbCanvas.getContext("2d");
+    // if (prevProps.windowWidth != this.state.windowWidth || prevProps.windowHeight != this.state.windowHeight) {
+    //   let rgbCanvas = rgbImageRef.current;
+    //   width = rgbCanvas.width;
+    //   height = rgbCanvas.height;
+    //   this.props.canvas_size_update({ width, height });
+    // }
     // Load image and initialize all canvas images
+    if (prevState.polygonPoints !== this.state.polygonPoints) {
+      // Dispatch the action with the new polygon points
+      this.props.point_list_update(this.state.polygonPoints);
+    }
     if (prevProps.rgbImageUrl !== rgbImageUrl) {
       rgbContext.clearRect(0, 0, prevRgbSize.width, prevRgbSize.height);
       let rgbImage = new Image();
@@ -94,7 +113,9 @@ class RgbViewer extends Component {
           rgbImage = canvasResize(rgbImage);
         }
         initRgb(cloneCanvas(rgbImage));
-        this.redrawCanvas(); // 确保在图片加载后重新绘制
+        // if (this.state.polygonPoints) {
+        //   this.redrawCanvas();
+        // }
       };
     }
     // If main image changes, add draw/redraw canvas to operation
@@ -298,6 +319,7 @@ class RgbViewer extends Component {
       }
     }
   };
+
   handleMouseDown = event => {
     if (this.state.isDrawingMode) {
       const { offsetX, offsetY } = event.nativeEvent;
@@ -307,7 +329,7 @@ class RgbViewer extends Component {
     }
   };
   handleMouseMove = event => {
-    if (!this.state.isDrawingMode || event.buttons !== 1) return; // 如果不是画笔模式或鼠标左键未按下，不做处理
+    if (!this.state.isDrawingMode || event.buttons !== 1) return;
     let { memoryRgbCanvas, boxParams, storeBoxParams } = this.props;
     if (event.buttons !== 1 || !boxParams.start) return;
     if (memoryRgbCanvas) {
@@ -344,13 +366,11 @@ class RgbViewer extends Component {
     const { offsetX, offsetY } = e;
     const newPoint = { x: offsetX, y: offsetY };
     const { polygonPoints } = this.state;
-    // 添加新点到状态中
     this.setState(
       {
         polygonPoints: [...polygonPoints, newPoint]
       },
       () => {
-        // 每次添加点后重绘
         this.drawPolygon();
       }
     );
@@ -366,17 +386,17 @@ class RgbViewer extends Component {
         ctx.lineTo(point.x, point.y);
       }
     });
-    ctx.stroke(); // 绘制当前的多边形
+    ctx.stroke();
   };
   closePolygon = () => {
     const { polygonPoints } = this.state;
     if (polygonPoints.length > 2) {
       this.setState(
         {
-          polygonPoints: [...polygonPoints, polygonPoints[0]] // 将第一个点添加到最后来闭合多边形
+          polygonPoints: [...polygonPoints, polygonPoints[0]]
         },
         () => {
-          this.drawPolygon(); // 重新绘制多边形
+          this.drawPolygon();
         }
       );
     }
@@ -384,6 +404,18 @@ class RgbViewer extends Component {
   render() {
     const { rgbImageRef } = this;
     const { rgbScaleParams, depthScaleParams, isPanActive, activeDepthTool, storeScaleParams } = this.props;
+    const buttonStyle = {
+      backgroundColor: "#4CAF50", // Green background
+      color: "white",
+      padding: "15px 32px",
+      textAlign: "center",
+      textDecoration: "none",
+      display: "inline-block",
+      fontSize: "16px",
+      margin: "4px 2px",
+      cursor: "pointer",
+      borderRadius: "8px" // Rounded corners
+    };
     return (
       <RgbViewerStyle>
         <canvas
@@ -468,16 +500,28 @@ class RgbViewer extends Component {
             }
           }}
         ></canvas>
-        <button onClick={this.undoLastPoint}>Undo</button>
-        <button onClick={this.clearPoints}>Clear</button>
-        <button onClick={this.sendDataToBackend}>Update Normal map</button>
+        <div style={{ textAlign: "center" }}>
+          <button style={buttonStyle} onClick={this.undoLastPoint}>
+            Undo
+          </button>
+          <button style={buttonStyle} onClick={this.clearPoints}>
+            Clear
+          </button>
+        </div>
       </RgbViewerStyle>
     );
   }
   undoLastPoint = () => {
     const { polygonPoints } = this.state;
     if (polygonPoints.length > 0) {
-      this.setState({ polygonPoints: polygonPoints.slice(0, -1) }, this.redrawCanvas);
+      this.setState(
+        {
+          polygonPoints: polygonPoints.slice(0, -1)
+        },
+        () => {
+          this.redrawCanvas();
+        }
+      );
     }
   };
 
@@ -485,30 +529,26 @@ class RgbViewer extends Component {
     this.setState({ polygonPoints: [] }, this.redrawCanvas);
   };
   redrawCanvas = () => {
+    let { mainRgbCanvas, initImage, storeScaleParams } = this.props;
     const ctx = this.rgbImageRef.current.getContext("2d");
-    ctx.clearRect(0, 0, this.rgbImageRef.current.width, this.rgbImageRef.current.height);
-    let rgbImage = new Image();
-    rgbImage.src = this.props.rgbImageUrl;
-    rgbImage.onload = () => {
-      const scaleWidth = this.rgbImageRef.current.width / this.state.originalImageSize.width;
-      const scaleHeight = this.rgbImageRef.current.height / this.state.originalImageSize.height;
-      ctx.drawImage(rgbImage, 0, 0, this.rgbImageRef.current.width, this.rgbImageRef.current.height);
-      this.state.polygonPoints.forEach(point => {
-        // Scale points based on current canvas size
-        const scaledX = point.x * scaleWidth;
-        const scaledY = point.y * scaleHeight;
-        // Here you might want to use ctx.arc() or ctx.fillRect() to mark the points
-        ctx.fillRect(scaledX, scaledY, 5, 5); // Example: Draw a small box at the point
-      });
-    };
+    const rgbCanvas = this.rgbImageRef.current;
+    ctx.clearRect(0, 0, rgbCanvas.width, rgbCanvas.height);
+    const { ratio, centerShift_x, centerShift_y } = getRatio(mainRgbCanvas, rgbCanvas);
+    ctx.drawImage(
+      mainRgbCanvas,
+      centerShift_x,
+      centerShift_y,
+      mainRgbCanvas.width * ratio,
+      mainRgbCanvas.height * ratio
+    ); // Redraw the base image
+    this.drawPolygon();
   };
   //backend URL selection
   sendDataToBackend = async () => {
     const { polygonPoints } = this.state;
     try {
-      console.log(polygonPoints);
       const rgbCanvas = this.rgbImageRef.current;
-      const response = await fetch("http://127.0.0.1:5000/update_normal_map", {
+      const response = await fetch("http://localhost:5000/update_normal_map", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -516,7 +556,6 @@ class RgbViewer extends Component {
         body: JSON.stringify({ points: polygonPoints, canvasWidth: rgbCanvas.width, canvasHeight: rgbCanvas.height })
       });
       const data = await response.json();
-      console.log("Data received from backend", data);
     } catch (error) {
       console.error("Error sending data to backend", error);
     }
@@ -524,6 +563,8 @@ class RgbViewer extends Component {
 }
 
 const mapStateToProps = state => ({
+  canvasSize: imageSelectors.canvasSize(state),
+  pointerList: imageSelectors.pointerList(state),
   rgbImageUrl: imageSelectors.rgbImageUrl(state),
   mainRgbCanvas: imageSelectors.mainRgbCanvas(state),
   memoryRgbCanvas: imageSelectors.memoryRgbCanvas(state),
@@ -539,6 +580,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+  canvas_size_update: imageActions.canvas_size_update,
+  point_list_update: imageActions.point_list_update,
   normal_map_change: imageActions.normal_map_change,
   initImage: imageActions.initImage,
   initRgb: imageActions.initRgb,

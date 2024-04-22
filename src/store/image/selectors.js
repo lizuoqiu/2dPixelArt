@@ -1,4 +1,5 @@
 export const selectors = {
+  pointerList: state => state.image.pointerList,
   rgbImageUrl: state => state.image.rgbImageUrl,
   depthImageUrl: state => state.image.depthImageUrl,
   selectionImageUrl: state => state.image.selectionImageUrl,
@@ -20,5 +21,6 @@ export const selectors = {
   activeDepthTool: state => state.image.activeDepthTool,
   toolsParameters: state => state.image.toolsParameters,
   parameters: state => state.image.parameters,
-  operationStack: state => state.image.operationStack
+  operationStack: state => state.image.operationStack,
+  canvasSize: state => state.image.canvasSize
 };
