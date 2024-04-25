@@ -70,14 +70,14 @@ def update_normal_map():
     global norm_map
     data = request.get_json()
     norm_dict = {
-        "UP": [217, 127, 217],
-        "DOWN": [37, 127, 217],
-        "LEFT": [127, 37, 217],
-        "RIGHT": [127, 217, 217],
-        "TOP-LEFT": [191, 63, 217],
+        "UP": [127, 217, 217],
+        "DOWN": [127, 37, 217],
+        "LEFT": [37, 127, 217],
+        "RIGHT": [217, 127, 217],
+        "TOP-LEFT": [63, 191, 217],
         "TOP-RIGHT": [191, 191, 217],
         "BOTTOM-LEFT": [63, 63, 217],
-        "BOTTOM-RIGHT": [63, 191, 217]
+        "BOTTOM-RIGHT": [191, 63, 217]
     }
     # Now you can access your points array from the data
     if data:
@@ -157,10 +157,13 @@ def update_light():
     light_list = data.get('lightSources')
     for light in light_list:
         position = light.get('position')
+        print(light)
         x = position.get('x')
         y = position.get('y')
+        print("input x, y:", x, y)
         width = light.get('canvasWidth')
         height = light.get('canvasHeight')
+        print("canvas w, h:", width, height)
         color = light.get('color')
         r = color.get('r')
         g = color.get('g')
@@ -170,7 +173,8 @@ def update_light():
         ratio_h = img_h / height
         x = (x * ratio_w - (img_h / 2))
         y = (y * ratio_h - (img_w / 2))
-        light_sources.append({'position': np.array([y, x, 10], dtype='float64'), 'color': np.array([r/255, g/255, b/255])})
+        light_sources.append({'position': np.array([x, -y, 10], dtype='float64'), 'color': np.array([r/255, g/255, b/255])})
+        print("light pos:", x, y)
 
     ambient_light = np.array([0.5, 0.5, 0.5])
     norm_map, shaded_image = apply_shading(input, norm_map / 255, light_sources, ambient_light, False)

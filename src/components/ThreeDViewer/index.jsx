@@ -20,8 +20,8 @@ function ImageViewer() {
     // Extract position, height (based on canvas), and color for each light source
     const lightSourceData = lightSources.map(source => ({
       position: {
-        x: source.x * canvasBounds.width, // Convert relative to absolute
-        y: source.y * canvasBounds.height
+        x: source.x, // Convert relative to absolute
+        y: source.y
       },
       canvasWidth: canvasBounds.width,
       canvasHeight: canvasBounds.height,
