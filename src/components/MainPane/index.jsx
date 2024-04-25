@@ -1,20 +1,15 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-import { selectors as toolExtSelectors } from "store/toolext";
-import { selectors as imageSelectors } from "store/image";
 import DepthViewer from "components/DepthViewer";
 import RgbViewer from "components/RgbViewer";
 import HistViewer from "components/HistViewer";
 import ThreeDViewer from "components/ThreeDViewer";
 import MainPaneStyle from "./style";
-import { canvasToImage } from "utils/canvasUtils";
 
 class MainPane extends Component {
   render() {
-    const { toolExtOpen, memoryRgbCanvas, memoryDepthCanvas } = this.props;
     return (
       <MainPaneStyle>
-        <div className={toolExtOpen ? "main main-shrink" : "main main-expand"}>
+        <div className={"main"}>
           <div className="main-row">
             <div className="main-column main-column-2d">
               <div className="box rgb-box">
@@ -39,10 +34,4 @@ class MainPane extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  toolExtOpen: toolExtSelectors.toolExtOpen(state),
-  memoryRgbCanvas: imageSelectors.memoryRgbCanvas(state),
-  memoryDepthCanvas: imageSelectors.memoryDepthCanvas(state)
-});
-
-export default connect(mapStateToProps, null)(MainPane);
+export default MainPane;

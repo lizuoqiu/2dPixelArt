@@ -182,34 +182,9 @@ export function ImageEditor({
                     >
                       <label htmlFor="upload-rgb-image">Open RGB Image</label>
                     </DropdownItem>
-                    <DropdownItem
-                      onClick={() => {
-                        openAttachment("upload-depth-image");
-                      }}
-                    >
-                      <label htmlFor="upload-depth-image">Open Depth Image</label>
-                    </DropdownItem>
                     <DropdownItem onClick={loadSample}>
                       <label>Load Sample Images</label>
                     </DropdownItem>
-                    <DropdownItem divider />
-                    <DropdownItem
-                      disabled={operationStack.activeIndex < 1}
-                      onClick={() => {
-                        openAttachment("upload-selection-image");
-                      }}
-                    >
-                      <label htmlFor="upload-selection-image">Import Selection Image</label>
-                    </DropdownItem>
-                    <DropdownItem
-                      disabled={operationStack.activeIndex < 1}
-                      onClick={() => {
-                        openAttachment("upload-mask-image");
-                      }}
-                    >
-                      <label htmlFor="upload-mask-image">Import Selection Mask</label>
-                    </DropdownItem>
-                    <DropdownItem divider />
                     <DropdownItem
                       disabled={memoryDepthCanvas === null}
                       onClick={() => {

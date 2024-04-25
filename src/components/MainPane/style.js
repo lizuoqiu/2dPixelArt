@@ -56,16 +56,6 @@ const MainPaneStyle = styled.div`
       }
     }
   }
-  .main-expand {
-    margin-left: 0;
-    transition: all 0.5s;
-    -webkit-transition: all 0.5s;
-  }
-  .main-shrink {
-    margin-left: 250px;
-    transition: all 0.5s;
-    -webkit-transition: all 0.5s;
-  }
 `;
 
 export default MainPaneStyle;
