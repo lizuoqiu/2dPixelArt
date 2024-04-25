@@ -2,7 +2,7 @@
 
 This folder contains the following subdirectories:
 
-- `DepthEditingTool`: This contains the source files for the web editing application.
+- `2dPixelArt`: This contains the source files for the web editing application.
 - `sample_images`: This contains 3 sample RGB images with their corresponding depth maps for test purposes.
 
 ## Setting up the interface
@@ -56,7 +56,7 @@ Run the following scripts on the terminal to setup `yarn`:
 
 ## Available Scripts
 
-In the `DepthEditingTool` directory, you can run:
+In the `2dPixelArt` directory, you can run:
 
 ### `yarn install` or `yarn`
 
